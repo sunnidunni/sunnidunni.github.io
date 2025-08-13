@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
-import { createTextTexture } from './textures.js';
+import { createTextTexture} from './textures.js';
 
 // === PORTFOLIO ITEMS ===
 export function createPortfolioItems() {

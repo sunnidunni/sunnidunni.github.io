@@ -242,6 +242,15 @@ function drawPixelArt(context, startX, startY, pattern, color) {
 }
 
 // Legacy function for backward compatibility
-export function createTextTexture(text, width, height) {
-    return createAboutMeTexture(width, height);
+export function createTextTexture(type, width, height) {
+    switch (type){
+        case 'About Me':
+            return createAboutMeTexture(width, height);
+        case 'Projects':
+            return createProjectsTexture(width, height);
+        case 'Contact':
+            return createContactTexture(width, height);
+
+    }
+    
 } 

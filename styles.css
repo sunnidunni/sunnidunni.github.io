@@ -88,11 +88,15 @@ canvas {
 
 .modal-content p {
     line-height: 1.8;
-    color: #e2e8f0; /* Light slate */
     font-family: 'VT323', monospace; /* Pixel font for body text */
     font-size: 1.1rem;
 }
-
+.modal-body {
+    line-height: 1.8;
+    color: #ededed; /* Light slate */
+    font-family: 'VT323', monospace; /* Pixel font for body text */
+    font-size: 1.1rem;
+}
 /* Loading screen with color theory-based retro theme */
 #loading {
     transition: opacity 0.5s ease-out;

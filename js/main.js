@@ -7,6 +7,7 @@ import { createPortfolioItems } from './portfolioItems.js';
 import { setupControls } from './controls.js';
 import { setupInteraction, setupModals } from './interaction.js';
 import { hideLoadingScreen } from './loading.js';
+import { setupPencilCursor } from './pencil.js';
 
 // === MAIN APPLICATION ===
 class PortfolioApp {
@@ -15,6 +16,8 @@ class PortfolioApp {
         this.particleSystem = null;
         this.controls = null;
         this.frameCount = 0;
+
+        this.pencilCursor = null;
         this.init();
     }
 
@@ -44,6 +47,9 @@ class PortfolioApp {
             console.log('Setting up modals...');
             setupModals();
 
+            console.log('Setting up pencil cursor...');
+            this.pencilCursor = setupPencilCursor(scene, camera, renderer);
+
             console.log('Starting animation loop...');
             // Start animation loop
             this.animate();
@@ -67,6 +73,9 @@ class PortfolioApp {
             if (this.particleSystem) {
                 animateParticles(this.particleSystem);
             }
+            if (this.pencilCursor) {
+                this.pencilCursor.update();
+            }
 
             // Animate floating decorative elements
             this.animateFloatingElements();
@@ -75,6 +84,7 @@ class PortfolioApp {
             if (this.controls) {
                 this.controls.update();
             }
+            
 
             // Render the scene
             renderer.render(scene, camera);

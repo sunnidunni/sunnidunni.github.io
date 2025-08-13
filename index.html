@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Portfolio on a Table</title>
+    
+    <!-- Link to Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Link to your custom stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Link to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js Import Map -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900">
+
+    <!-- The container for the 3D scene -->
+    <canvas id="bg"></canvas>
+
+    <!-- Loading indicator -->
+    <div id="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-white text-lg">Loading your 3D portfolio...</p>
+        </div>
+    </div>
+
+    <!-- Instructions overlay -->
+    <div class="fixed top-4 left-4 z-40 bg-black bg-opacity-50 text-white p-4 rounded-lg backdrop-blur-sm">
+        <p class="text-sm">🖱️ Click on portfolio items to explore</p>
+        <p class="text-sm">🎮 Use mouse to rotate and zoom</p>
+        <p class="text-sm">📏 Drag resistance increases with distance</p>
+        <p class="text-sm">✨ Modern 3D portfolio experience</p>
+    </div>
+
+    <!-- Modals for portfolio sections -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content bg-white rounded-lg shadow-2xl">
+            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">About Me</h2>
+            <div class="space-y-4">
+                <p class="text-gray-600">Hello! I'm a passionate developer and creative technologist with a love for building immersive digital experiences. I specialize in web development, 3D graphics, and interactive design.</p>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">Skills & Technologies</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">JavaScript</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Three.js</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">React</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Node.js</span>
+                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Python</span>
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">WebGL</span>
+                    </div>
+                </div>
+                
+                <p class="text-gray-600">When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing knowledge with the developer community.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="projectsModal" class="modal">
+        <div class="modal-content bg-white rounded-lg shadow-2xl">
+            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Projects</h2>
+            <div class="space-y-6">
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">🎨 Interactive 3D Portfolio</h3>
+                    <p class="text-gray-600 mb-2">A dynamic 3D portfolio built with Three.js and modern web technologies. Features interactive elements, smooth animations, and responsive design.</p>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Three.js</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">WebGL</span>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">JavaScript</span>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">🚀 E-commerce Platform</h3>
+                    <p class="text-gray-600 mb-2">A full-stack e-commerce solution with real-time inventory management, secure payment processing, and responsive admin dashboard.</p>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">React</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Node.js</span>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">MongoDB</span>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-purple-500 pl-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">📊 Data Visualization Dashboard</h3>
+                    <p class="text-gray-600 mb-2">An interactive dashboard for analyzing complex datasets with D3.js, featuring real-time updates and customizable charts.</p>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">D3.js</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Vue.js</span>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Python</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contactModal" class="modal">
+        <div class="modal-content bg-white rounded-lg shadow-2xl">
+            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Contact Me</h2>
+            <div class="space-y-6">
+                <p class="text-gray-600">I'm always excited to connect with fellow developers, potential collaborators, or anyone interested in technology and innovation.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-2">📧 Email</h3>
+                        <a href="mailto:hello@yourportfolio.com" class="text-blue-600 hover:text-blue-800">hello@yourportfolio.com</a>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-2">💼 LinkedIn</h3>
+                        <a href="https://linkedin.com/in/yourprofile" target="_blank" class="text-blue-600 hover:text-blue-800">linkedin.com/in/yourprofile</a>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-2">🐙 GitHub</h3>
+                        <a href="https://github.com/yourusername" target="_blank" class="text-blue-600 hover:text-blue-800">github.com/yourusername</a>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-2">🌐 Website</h3>
+                        <a href="https://yourwebsite.com" target="_blank" class="text-blue-600 hover:text-blue-800">yourwebsite.com</a>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-blue-800 mb-2">💡 Let's Collaborate!</h3>
+                    <p class="text-blue-700 text-sm">I'm open to freelance opportunities, open-source contributions, and interesting projects. Feel free to reach out!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to your main JavaScript file -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

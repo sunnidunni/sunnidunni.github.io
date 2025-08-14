@@ -67,7 +67,6 @@ export function createPortfolioItems() {
     scene.add(contactItem);
     portfolioItems.push(contactItem);
 
-   
 
     return portfolioItems;
 } 

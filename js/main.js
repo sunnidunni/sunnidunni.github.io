@@ -8,6 +8,7 @@ import { setupControls } from './controls.js';
 import { setupInteraction, setupModals } from './interaction.js';
 import { hideLoadingScreen } from './loading.js';
 import { setupPencilCursor } from './pencil.js';
+import { createSpotifyLogo } from './spotifyLogo.js';
 
 // === MAIN APPLICATION ===
 class PortfolioApp {
@@ -16,6 +17,7 @@ class PortfolioApp {
         this.particleSystem = null;
         this.controls = null;
         this.frameCount = 0;
+        this.spotifyLogo = null;
 
         this.pencilCursor = null;
         this.init();
@@ -38,11 +40,14 @@ class PortfolioApp {
             console.log('Creating portfolio items...');
             this.portfolioItems = createPortfolioItems();
             
+            console.log('Creating Spotify logo...');
+            this.spotifyLogo = createSpotifyLogo();
+            
             console.log('Setting up controls...');
             this.controls = setupControls();
             
             console.log('Setting up interaction...');
-            setupInteraction(this.portfolioItems);
+            setupInteraction(this.portfolioItems, this.spotifyLogo);
             
             console.log('Setting up modals...');
             setupModals();
@@ -97,19 +102,36 @@ class PortfolioApp {
     // Animate floating decorative elements
     animateFloatingElements() {
         // Find all floating elements in the scene
-        scene.children.forEach(child => {
-            if (child.userData && child.userData.floatSpeed) {
+        const animateElement = (element) => {
+            if (element.userData && element.userData.floatSpeed) {
                 // Floating animation
-                const time = Date.now() * child.userData.floatSpeed;
-                child.position.y = child.userData.originalY + Math.sin(time) * 0.3;
+                const time = Date.now() * element.userData.floatSpeed;
+                element.position.y = element.userData.originalY + Math.sin(time) * 0.3;
                 
                 // Rotation animation
-                if (child.userData.rotationSpeed) {
-                    child.rotation.y += child.userData.rotationSpeed;
-                    child.rotation.z += child.userData.rotationSpeed * 0.5;
+                if (element.userData.rotationSpeed) {
+                    element.rotation.y += element.userData.rotationSpeed;
+                    element.rotation.z += element.userData.rotationSpeed * 0.5;
                 }
             }
-        });
+            
+            // Handle geometric shape rotations
+            if (element.userData && element.userData.axis) {
+                element.rotateOnAxis(element.userData.axis, element.userData.rotationSpeed);
+            }
+            
+            // Handle pulsing sound rings
+            if (element.userData && element.userData.pulseSpeed) {
+                const time = Date.now() * element.userData.pulseSpeed;
+                const scale = element.userData.baseScale + Math.sin(time) * element.userData.pulseAmplitude;
+                element.scale.setScalar(scale);
+            }
+            
+            // Recursively animate children
+            element.children.forEach(animateElement);
+        };
+
+        scene.children.forEach(animateElement);
     }
 }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Portfolio on a Table</title>
+    <title>Derek's portfolio</title>
     
     <!-- Link to Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -152,6 +152,35 @@
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <h3 class="font-semibold text-blue-800 mb-2">Hit me up!</h3>
                     <p class="text-blue-900 text-sm">I'm open to any interesting projects, feel free to reach out!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="musicModal" class="modal">
+        <div class="modal-content bg-white rounded-lg shadow-2xl">
+            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Music</h2>
+            <div class="space-y-6">
+                <p class="modal-body">Check out what I'm listening to lately!</p>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-4">🎵 Current Artist Obsession</h3>
+                    <iframe data-testid="embed-iframe" 
+                            style="border-radius:12px" 
+                            src="https://open.spotify.com/embed/artist/40tNK2YedBV2jRFAHxpifB?utm_source=generator&theme=0" 
+                            width="100%" 
+                            height="152" 
+                            frameBorder="0" 
+                            allowfullscreen="" 
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                            loading="lazy">
+                    </iframe>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-green-800 mb-2">🎧 Music & Code</h3>
+                    <p class="text-green-900 text-sm">Music fuels my coding sessions. From lo-fi beats during deep work to upbeat tracks during debugging marathons!</p>
                 </div>
             </div>
         </div>

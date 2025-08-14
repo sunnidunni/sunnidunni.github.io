@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-// === RETRO PIXEL ART TEXTURES WITH COLOR THEORY ===
+// === ENHANCED RETRO PIXEL ART TEXTURES WITH IMPROVED COLOR THEORY ===
 
-// Create retro pixel art texture for About Me
+// Create enhanced retro pixel art texture for About Me
 export function createAboutMeTexture(width, height) {
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -13,70 +13,90 @@ export function createAboutMeTexture(width, height) {
     context.imageSmoothingEnabled = false;
     context.imageSmoothingQuality = 'low';
 
-    // Color theory: Analogous color scheme (blue-green family)
+    // Enhanced color theory: Ocean depth theme with better contrast
     const colors = {
-        bg1: '#1e3a8a',      // Deep blue (primary)
-        bg2: '#1e40af',      // Medium blue (analogous)
-        border: '#fbbf24',    // Warm yellow (complementary to blue)
-        text: '#f8fafc',      // Off-white (high contrast)
-        accent1: '#10b981',   // Emerald green (analogous)
-        accent2: '#f59e0b'    // Amber (warm accent)
+        bg1: '#0f172a',      // Slate 900 (deep ocean)
+        bg2: '#1e293b',      // Slate 800 (medium depth)
+        bg3: '#334155',      // Slate 600 (shallow water)
+        border: '#22d3ee',   // Cyan 400 (electric blue)
+        text: '#f1f5f9',     // Slate 100 (crisp white)
+        accent1: '#06b6d4',  // Cyan 500 (ocean blue)
+        accent2: '#0ea5e9',  // Sky 500 (bright blue)
+        glow: '#67e8f9'      // Cyan 300 (light glow)
     };
 
-    // Create pixelated background
-    const pixelSize = 8;
+    // Create animated wave-like background
+    context.fillStyle = colors.bg1;
+    context.fillRect(0, 0, width, height);
+
+    const pixelSize = 10;
     for (let x = 0; x < width; x += pixelSize) {
         for (let y = 0; y < height; y += pixelSize) {
-            const color = (x + y) % (pixelSize * 2) === 0 ? colors.bg1 : colors.bg2;
-            context.fillStyle = color;
+            const wave = Math.sin((x + y) * 0.02) * 0.5 + 0.5;
+            if (wave > 0.6) {
+                context.fillStyle = colors.bg2;
+            } else if (wave > 0.3) {
+                context.fillStyle = colors.bg3;
+            } else {
+                context.fillStyle = colors.bg1;
+            }
             context.fillRect(x, y, pixelSize, pixelSize);
         }
     }
 
-    // Add retro border pattern
+    // Enhanced border with glow effect
     context.strokeStyle = colors.border;
-    context.lineWidth = 4;
+    context.lineWidth = 6;
+    context.shadowColor = colors.glow;
+    context.shadowBlur = 8;
+    context.strokeRect(25, 25, width - 50, height - 50);
     
-    // Pixelated border
-    for (let i = 0; i < 4; i++) {
-        context.strokeRect(20 + i * 2, 20 + i * 2, width - 40 - i * 4, height - 40 - i * 4);
-    }
+    // Reset shadow for clean inner elements
+    context.shadowBlur = 0;
 
-    // Add retro pixel art elements
-    drawPixelArt(context, width / 2 - 60, height / 2 - 100, [
-        "  ████  ",
-        " ██████ ",
-        "████████",
-        " ██████ ",
-        "  ████  "
+    // Add enhanced profile icon
+    drawPixelArt(context, width / 2 - 60, height / 2 - 140, [
+        "    ████████    ",
+        "  ████████████  ",
+        " ██████████████ ",
+        "████████████████",
+        "████  ████  ████",
+        "████  ████  ████",
+        "████████████████",
+        "████  ██████  ██",
+        "████████████████",
+        " ██████████████ ",
+        "  ████████████  ",
+        "    ████████    "
     ], colors.accent1);
 
-    // Text with authentic pixel font
-    context.font = 'bold 60px "Press Start 2P"';
+    // Enhanced text with multiple shadow layers
+    context.font = 'bold 64px "Press Start 2P", monospace';
     context.fillStyle = colors.text;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     
-    // Add pixelated text shadow
-    context.shadowColor = colors.border;
-    context.shadowBlur = 0;
-    context.shadowOffsetX = 4;
-    context.shadowOffsetY = 4;
-    
+    // Multi-layer shadow for depth
+    context.fillStyle = colors.bg1;
+    context.fillText('ABOUT ME', width / 2 + 6, height / 2 + 6);
+    context.fillStyle = colors.border;
+    context.fillText('ABOUT ME', width / 2 + 3, height / 2 + 3);
+    context.fillStyle = colors.text;
     context.fillText('ABOUT ME', width / 2, height / 2);
 
-    // Add retro accent pixels
+    // Enhanced decorative elements
     context.fillStyle = colors.accent2;
-    for (let i = 0; i < 8; i++) {
-        const x = 30 + i * 60;
-        const y = height - 50;
-        context.fillRect(x, y, 4, 4);
+    for (let i = 0; i < 10; i++) {
+        const x = 40 + i * 50;
+        const y = height - 60 + Math.sin(i * 0.5) * 10;
+        context.fillRect(x, y, 8, 8);
+        context.fillRect(x + 2, y + 2, 4, 4);
     }
 
     return new THREE.CanvasTexture(canvas);
 }
 
-// Create retro pixel art texture for Projects
+// Create enhanced retro pixel art texture for Projects
 export function createProjectsTexture(width, height) {
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -86,74 +106,91 @@ export function createProjectsTexture(width, height) {
     context.imageSmoothingEnabled = false;
     context.imageSmoothingQuality = 'low';
 
-    // Color theory: Triadic color scheme (purple, green, orange)
+    // Enhanced color theory: Cyberpunk theme with neon accents
     const colors = {
-        bg1: '#581c87',      // Deep purple (primary)
-        bg2: '#7c3aed',      // Medium purple (analogous)
-        border: '#06b6d4',    // Cyan (complementary to purple)
-        text: '#f8fafc',      // Off-white (high contrast)
-        accent1: '#10b981',   // Emerald green (triadic)
-        accent2: '#f97316'    // Orange (triadic)
+        bg1: '#1a0b2e',      // Deep purple (cyber base)
+        bg2: '#16213e',      // Dark blue-purple
+        bg3: '#0f3460',      // Electric blue
+        border: '#e879f9',   // Fuchsia 400 (neon pink)
+        text: '#f8fafc',     // Slate 50 (clean white)
+        accent1: '#22c55e',  // Green 500 (matrix green)
+        accent2: '#f59e0b',  // Amber 500 (warning orange)
+        glow: '#c084fc'      // Purple 400 (soft glow)
     };
 
-    // Create tech grid background
-    const gridSize = 16;
+    // Create circuit board background
     context.fillStyle = colors.bg1;
     context.fillRect(0, 0, width, height);
     
+    const gridSize = 20;
     context.strokeStyle = colors.bg2;
-    context.lineWidth = 1;
+    context.lineWidth = 2;
+    
+    // Draw circuit lines
     for (let x = 0; x < width; x += gridSize) {
-        context.moveTo(x, 0);
-        context.lineTo(x, height);
+        for (let y = 0; y < height; y += gridSize) {
+            if (Math.random() > 0.7) {
+                context.strokeStyle = colors.bg3;
+                context.beginPath();
+                context.moveTo(x, y);
+                context.lineTo(x + gridSize, y);
+                context.lineTo(x + gridSize, y + gridSize);
+                context.stroke();
+            }
+        }
     }
-    for (let y = 0; y < height; y += gridSize) {
-        context.moveTo(0, y);
-        context.lineTo(width, y);
-    }
-    context.stroke();
 
-    // Add retro border
+    // Enhanced border with glow
     context.strokeStyle = colors.border;
-    context.lineWidth = 3;
-    context.strokeRect(15, 15, width - 30, height - 30);
+    context.lineWidth = 8;
+    context.shadowColor = colors.glow;
+    context.shadowBlur = 12;
+    context.strokeRect(20, 20, width - 40, height - 40);
+    context.shadowBlur = 0;
 
-    // Add retro computer icon
-    drawPixelArt(context, width / 2 - 40, height / 2 - 80, [
-        "████████",
-        "█      █",
-        "█ ████ █",
-        "█ ████ █",
-        "█ ████ █",
-        "█      █",
-        "████████"
+    // Add enhanced computer/code icon
+    drawPixelArt(context, width / 2 - 60, height / 2 - 140, [
+        "████████████████████",
+        "█                  █",
+        "█  ████    ████    █",
+        "█  ████    ████    █",
+        "█                  █",
+        "█  ████████████    █",
+        "█  ████████████    █",
+        "█                  █",
+        "█  ████    ████    █",
+        "█  ████    ████    █",
+        "█                  █",
+        "████████████████████"
     ], colors.accent1);
 
-    // Text with authentic pixel font
-    context.font = 'bold 55px "Press Start 2P"';
-    context.fillStyle = colors.text;
+    // Enhanced text
+    context.font = 'bold 60px "Press Start 2P", monospace';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     
-    context.shadowColor = colors.border;
-    context.shadowBlur = 0;
-    context.shadowOffsetX = 3;
-    context.shadowOffsetY = 3;
-    
+    context.fillStyle = colors.bg1;
+    context.fillText('PROJECTS', width / 2 + 5, height / 2 + 25);
+    context.fillStyle = colors.border;
+    context.fillText('PROJECTS', width / 2 + 2, height / 2 + 22);
+    context.fillStyle = colors.text;
     context.fillText('PROJECTS', width / 2, height / 2 + 20);
 
-    // Add tech accent pixels
+    // Add circuit nodes
     context.fillStyle = colors.accent2;
-    for (let i = 0; i < 6; i++) {
-        const x = 40 + i * 80;
-        const y = height - 40;
-        context.fillRect(x, y, 6, 6);
+    for (let i = 0; i < 8; i++) {
+        const x = 50 + i * 80;
+        const y = height - 50;
+        context.fillRect(x - 4, y - 4, 8, 8);
+        context.fillStyle = colors.accent1;
+        context.fillRect(x - 2, y - 2, 4, 4);
+        context.fillStyle = colors.accent2;
     }
 
     return new THREE.CanvasTexture(canvas);
 }
 
-// Create retro pixel art texture for Contact
+// Create enhanced retro pixel art texture for Contact
 export function createContactTexture(width, height) {
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -163,68 +200,93 @@ export function createContactTexture(width, height) {
     context.imageSmoothingEnabled = false;
     context.imageSmoothingQuality = 'low';
 
-    // Color theory: Split-complementary (red with blue-green and yellow-green)
+    // Enhanced color theory: Warm sunset theme
     const colors = {
-        bg1: '#dc2626',      // Red (primary)
-        bg2: '#b91c1c',      // Darker red (shade)
-        border: '#10b981',    // Emerald green (complementary)
-        text: '#f8fafc',      // Off-white (high contrast)
-        accent1: '#fbbf24',   // Amber (warm accent)
-        accent2: '#06b6d4'    // Cyan (cool accent)
+        bg1: '#7c2d12',      // Orange 800 (sunset base)
+        bg2: '#ea580c',      // Orange 600 (warm middle)
+        bg3: '#fb923c',      // Orange 400 (bright highlight)
+        border: '#06b6d4',   // Cyan 500 (cool contrast)
+        text: '#fef7cd',     // Yellow 50 (warm white)
+        accent1: '#eab308',  // Yellow 500 (sun yellow)
+        accent2: '#ec4899',  // Pink 500 (vibrant pink)
+        glow: '#fbbf24'      // Amber 400 (warm glow)
     };
 
-    // Create pixelated background
-    const pixelSize = 6;
+    // Create sunset gradient background
+    const gradient = context.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, colors.bg3);
+    gradient.addColorStop(0.5, colors.bg2);
+    gradient.addColorStop(1, colors.bg1);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+
+    // Add texture overlay
+    const pixelSize = 8;
     for (let x = 0; x < width; x += pixelSize) {
         for (let y = 0; y < height; y += pixelSize) {
-            const color = (x + y) % (pixelSize * 3) === 0 ? colors.bg1 : colors.bg2;
-            context.fillStyle = color;
-            context.fillRect(x, y, pixelSize, pixelSize);
+            if (Math.random() > 0.8) {
+                context.fillStyle = colors.bg3 + '40';
+                context.fillRect(x, y, pixelSize, pixelSize);
+            }
         }
     }
 
-    // Add retro border
+    // Enhanced border
     context.strokeStyle = colors.border;
-    context.lineWidth = 4;
-    context.strokeRect(20, 20, width - 40, height - 40);
+    context.lineWidth = 7;
+    context.shadowColor = colors.glow;
+    context.shadowBlur = 10;
+    context.strokeRect(25, 25, width - 50, height - 50);
+    context.shadowBlur = 0;
 
-    // Add retro heart icon
-    drawPixelArt(context, width / 2 - 30, height / 2 - 80, [
-        " ██ ██ ",
-        "████████",
-        "████████",
-        " ██████ ",
-        "  ████  ",
-        "   ██   "
-    ], colors.accent2);
+    // Add enhanced communication icon
+    drawPixelArt(context, width / 2 - 60, height / 2 - 140, [
+        "  ████████████  ",
+        " ██████████████ ",
+        "████████████████",
+        "████        ████",
+        "████  ████  ████",
+        "████  ████  ████",
+        "████  ████  ████",
+        "████        ████",
+        "████████████████",
+        " ██████████████ ",
+        "  ████████████  ",
+        "      ████      "
+    ], colors.accent1);
 
-    // Text with authentic pixel font
-    context.font = 'bold 50px "Press Start 2P"';
-    context.fillStyle = colors.text;
+    // Enhanced text
+    context.font = 'bold 56px "Press Start 2P", monospace';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     
-    context.shadowColor = colors.border;
-    context.shadowBlur = 0;
-    context.shadowOffsetX = 3;
-    context.shadowOffsetY = 3;
-    
+    context.fillStyle = colors.bg1;
+    context.fillText('CONTACT', width / 2 + 4, height / 2 + 24);
+    context.fillStyle = colors.border;
+    context.fillText('CONTACT', width / 2 + 2, height / 2 + 22);
+    context.fillStyle = colors.text;
     context.fillText('CONTACT', width / 2, height / 2 + 20);
 
-    // Add retro accent pixels
-    context.fillStyle = colors.accent1;
-    for (let i = 0; i < 7; i++) {
-        const x = 35 + i * 70;
-        const y = height - 45;
-        context.fillRect(x, y, 5, 5);
+    // Add decorative hearts
+    context.fillStyle = colors.accent2;
+    for (let i = 0; i < 9; i++) {
+        const x = 40 + i * 60;
+        const y = height - 55 + Math.cos(i * 0.7) * 8;
+        drawPixelArt(context, x - 12, y - 12, [
+            " ██ ██ ",
+            "████████",
+            " ██████ ",
+            "  ████  ",
+            "   ██   "
+        ], colors.accent2);
     }
 
     return new THREE.CanvasTexture(canvas);
 }
 
-// Helper function to draw pixel art
+// Enhanced helper function to draw pixel art
 function drawPixelArt(context, startX, startY, pattern, color) {
-    const pixelSize = 8;
+    const pixelSize = 6;
     context.fillStyle = color;
     
     pattern.forEach((row, y) => {
@@ -241,16 +303,16 @@ function drawPixelArt(context, startX, startY, pattern, color) {
     });
 }
 
-// Legacy function for backward compatibility
+// Enhanced legacy function for backward compatibility
 export function createTextTexture(type, width, height) {
-    switch (type){
+    switch (type) {
         case 'About Me':
             return createAboutMeTexture(width, height);
         case 'Projects':
             return createProjectsTexture(width, height);
         case 'Contact':
             return createContactTexture(width, height);
-
+        default:
+            return createAboutMeTexture(width, height);
     }
-    
-} 
+}

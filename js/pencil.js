@@ -208,8 +208,9 @@ export class PencilCursor {
             points: tracePoints,
             mesh: null,
             age: 0,
-            maxAge: 5000, // 5 seconds lifetime
-            width: 0.5 // 10x bigger trace width
+            maxAge: 5000, // 8 seconds lifetime
+            width: 1, // 10x bigger trace width
+            segments: [] // Store individual segments for gradual fade
         };
         
         this.traces.push(this.currentTrace);
@@ -220,67 +221,40 @@ export class PencilCursor {
             const lastPoint = this.currentTrace.points[this.currentTrace.points.length - 1];
             const distance = lastPoint.distanceTo(this.intersectionPoint);
             
-            // Only add point if it's far enough from the last one (adjusted for bigger pencil)
-            if (distance > 1) {
+            // Much more sensitive threshold for smoother lines
+            if (distance > 0.3) {
                 this.currentTrace.points.push(this.intersectionPoint.clone());
-                this.updateTraceMesh();
+                this.createTraceSegment(lastPoint, this.intersectionPoint.clone());
             }
         }
     }
 
-    updateTraceMesh() {
-        if (!this.currentTrace || this.currentTrace.points.length < 2) return;
+    createTraceSegment(startPoint, endPoint) {
+        if (!this.currentTrace) return;
         
-        const points = this.currentTrace.points;
-        const geometry = new THREE.BufferGeometry();
-        const vertices = [];
-        const indices = [];
+        // Create a small tube segment between two points
+        const points = [startPoint, endPoint];
+        const curve = new THREE.CatmullRomCurve3(points);
+        const segmentGeometry = new THREE.TubeGeometry(curve, 8, 0.15, 8, false);
         
-        // Create a tube-like geometry from points
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-            const width = this.currentTrace.width;
-            
-            // Create cross-section vertices
-            vertices.push(
-                point.x - width/2, point.y + 0.01, point.z - width/2,
-                point.x + width/2, point.y + 0.01, point.z - width/2,
-                point.x + width/2, point.y + 0.01, point.z + width/2,
-                point.x - width/2, point.y + 0.01, point.z + width/2
-            );
-            
-            // Create indices for quads
-            if (i > 0) {
-                const base = (i - 1) * 4;
-                const next = i * 4;
-                
-                // Connect to previous segment
-                indices.push(
-                    base, base + 1, next,
-                    base + 1, next + 1, next,
-                    base + 1, base + 2, next + 1,
-                    base + 2, next + 2, next + 1,
-                    base + 2, base + 3, next + 2,
-                    base + 3, next + 3, next + 2,
-                    base + 3, base, next + 3,
-                    base, next, next + 3
-                );
-            }
-        }
+        const segmentMaterial = new THREE.MeshBasicMaterial({
+            color: 0x2F2F2F,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide
+        });
         
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.setIndex(indices);
-        geometry.computeVertexNormals();
+        const segmentMesh = new THREE.Mesh(segmentGeometry, segmentMaterial);
+        segmentMesh.position.y = 0.05;
         
-        // Remove old mesh
-        if (this.currentTrace.mesh) {
-            this.scene.remove(this.currentTrace.mesh);
-            this.currentTrace.mesh.geometry.dispose();
-        }
+        const segment = {
+            mesh: segmentMesh,
+            age: 0,
+            creationTime: Date.now()
+        };
         
-        // Create new mesh
-        this.currentTrace.mesh = new THREE.Mesh(geometry, this.traceMaterial.clone());
-        this.scene.add(this.currentTrace.mesh);
+        this.currentTrace.segments.push(segment);
+        this.scene.add(segmentMesh);
     }
 
     animatePencilTip() {
@@ -299,31 +273,43 @@ export class PencilCursor {
 
     update() {
         const deltaTime = this.clock.getDelta() * 1000;
+        const currentTime = Date.now();
         
         // Add trace point if drawing
         if (this.isDrawing) {
             this.addTracePoint();
         }
         
-        // Update existing traces
+        // Update existing traces with gradual segment fading
         this.traces = this.traces.filter(trace => {
             trace.age += deltaTime;
             
-            if (trace.mesh) {
-                // Fade out over time
-                const fadeStart = trace.maxAge * 0.7;
-                if (trace.age > fadeStart) {
-                    const fadeProgress = (trace.age - fadeStart) / (trace.maxAge - fadeStart);
-                    trace.mesh.material.opacity = 0.8 * (1 - fadeProgress);
-                }
-                
-                // Remove if too old
-                if (trace.age > trace.maxAge) {
-                    this.scene.remove(trace.mesh);
-                    trace.mesh.geometry.dispose();
-                    trace.mesh.material.dispose();
-                    return false;
-                }
+            // Update segments with gradual fade from oldest to newest
+            if (trace.segments) {
+                trace.segments = trace.segments.filter(segment => {
+                    const segmentAge = currentTime - segment.creationTime;
+                    const maxSegmentAge = 6000; // 6 seconds per segment
+                    
+                    if (segmentAge > maxSegmentAge) {
+                        // Remove old segments
+                        this.scene.remove(segment.mesh);
+                        segment.mesh.geometry.dispose();
+                        segment.mesh.material.dispose();
+                        return false;
+                    } else if (segmentAge > maxSegmentAge * 0.5) {
+                        // Start fading after 3 seconds
+                        const fadeStart = maxSegmentAge * 0.5;
+                        const fadeProgress = (segmentAge - fadeStart) / (maxSegmentAge - fadeStart);
+                        segment.mesh.material.opacity = 0.8 * (1 - fadeProgress);
+                    }
+                    
+                    return true;
+                });
+            }
+            
+            // Remove trace if it has no more segments
+            if (trace.segments && trace.segments.length === 0 && trace.age > 1000) {
+                return false;
             }
             
             return true;
@@ -341,6 +327,14 @@ export class PencilCursor {
                 this.scene.remove(trace.mesh);
                 trace.mesh.geometry.dispose();
                 trace.mesh.material.dispose();
+            }
+            
+            if (trace.segments) {
+                trace.segments.forEach(segment => {
+                    this.scene.remove(segment.mesh);
+                    segment.mesh.geometry.dispose();
+                    segment.mesh.material.dispose();
+                });
             }
         });
         

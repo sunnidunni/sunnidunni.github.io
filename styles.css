@@ -248,12 +248,6 @@ canvas {
     box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
 }
 
-/* Spotify iframe container */
-.modal-content iframe {
-    border: 2px solid #000000;
-    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
-}
-
 /* Custom scrollbar */
 .modal-content::-webkit-scrollbar {
     width: 12px;

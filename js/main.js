@@ -9,6 +9,7 @@ import { setupInteraction, setupModals } from './interaction.js';
 import { hideLoadingScreen } from './loading.js';
 import { setupPencilCursor } from './pencil.js';
 import { createSpotifyLogo } from './spotifyLogo.js';
+import { setupWanderingDog } from './dog.js';
 
 // === MAIN APPLICATION ===
 class PortfolioApp {
@@ -18,8 +19,9 @@ class PortfolioApp {
         this.controls = null;
         this.frameCount = 0;
         this.spotifyLogo = null;
-
         this.pencilCursor = null;
+        this.wanderingDog = null;
+
         this.init();
     }
 
@@ -43,11 +45,14 @@ class PortfolioApp {
             console.log('Creating Spotify logo...');
             this.spotifyLogo = createSpotifyLogo();
             
+            console.log('Creating wandering dog...');
+            this.wanderingDog = setupWanderingDog(scene);
+            
             console.log('Setting up controls...');
             this.controls = setupControls();
             
             console.log('Setting up interaction...');
-            setupInteraction(this.portfolioItems, this.spotifyLogo);
+            setupInteraction(this.portfolioItems, this.spotifyLogo, this.wanderingDog);
             
             console.log('Setting up modals...');
             setupModals();
@@ -78,8 +83,15 @@ class PortfolioApp {
             if (this.particleSystem) {
                 animateParticles(this.particleSystem);
             }
+            
+            // Update pencil cursor
             if (this.pencilCursor) {
                 this.pencilCursor.update();
+            }
+
+            // Update wandering dog
+            if (this.wanderingDog) {
+                this.wanderingDog.update();
             }
 
             // Animate floating decorative elements
@@ -90,7 +102,6 @@ class PortfolioApp {
                 this.controls.update();
             }
             
-
             // Render the scene
             renderer.render(scene, camera);
             
@@ -145,14 +156,14 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Also try to initialize if DOM is already loaded
-if (document.readyState === 'loading') {
-    console.log('DOM still loading...');
-} else {
-    console.log('DOM already loaded, creating Portfolio App immediately...');
-    try {
-        new PortfolioApp();
-    } catch (error) {
-        console.error('Error creating Portfolio App:', error);
-    }
-}
+// // Also try to initialize if DOM is already loaded
+// if (document.readyState === 'loading') {
+//     console.log('DOM still loading...');
+// } else {
+//     console.log('DOM already loaded, creating Portfolio App immediately...');
+//     try {
+//         new PortfolioApp();
+//     } catch (error) {
+//         console.error('Error creating Portfolio App:', error);
+//     }
+// }

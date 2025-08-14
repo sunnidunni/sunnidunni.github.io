@@ -17,7 +17,7 @@ export class SpotifyLogo {
 
     createPencilDrawnSpotifyLogo() {
         const logoRadius = 2.9;
-        const center = { x: 15, z: 10 };
+        const center = { x: -12, z: 5 };
         
         // Create invisible collision mesh for better interaction
         this.createCollisionMesh(center, logoRadius);

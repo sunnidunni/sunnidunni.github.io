@@ -9,11 +9,14 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
     const mouse = new THREE.Vector2();
     let hoveredItem = null;
     let hoveredSpotify = false;
+    let hoveredDog = false;
     let lastMove = 0;
+    
     function onMouseMove(event) {
         const now = performance.now();
         if (now - lastMove < 16) return; // ~60fps
         lastMove = now;
+        
         // Don't process interactions if modal is open
         if (isModalOpen) return;
         
@@ -29,10 +32,12 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
         let spotifyIntersects = [];
         if (spotifyLogo) {
             spotifyIntersects = raycaster.intersectObjects(spotifyLogo.getIntersectable());
-            // Debug logging for hover
-            if (spotifyIntersects.length > 0 && !hoveredSpotify) {
-                console.log('Spotify logo hover detected:', spotifyIntersects[0].object.userData);
-            }
+        }
+
+        // Check dog
+        let dogIntersects = [];
+        if (dog) {
+            dogIntersects = raycaster.intersectObjects(dog.getIntersectable(), true);
         }
 
         if (intersects.length > 0) {
@@ -49,10 +54,14 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
                 hoveredItem.material.opacity = 1;
                 hoveredItem.scale.set(1.05, 1.05, 1.05);
             }
-            // Reset Spotify hover if hovering portfolio item
+            // Reset other hovers
             if (hoveredSpotify && spotifyLogo) {
                 spotifyLogo.onHover(false);
                 hoveredSpotify = false;
+            }
+            if (hoveredDog) {
+                hoveredDog = false;
+                document.body.style.cursor = 'default';
             }
         } else if (spotifyIntersects.length > 0) {
             // Hovering Spotify logo
@@ -60,12 +69,33 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
                 spotifyLogo.onHover(true);
                 hoveredSpotify = true;
             }
-            // Reset portfolio item hover
+            // Reset other hovers
             if (hoveredItem) {
                 hoveredItem.position.y = hoveredItem.userData.originalY;
                 hoveredItem.material.opacity = 0.98;
                 hoveredItem.scale.set(1, 1, 1);
                 hoveredItem = null;
+            }
+            if (hoveredDog) {
+                hoveredDog = false;
+                document.body.style.cursor = 'default';
+            }
+        } else if (dogIntersects.length > 0) {
+            // Hovering dog
+            if (!hoveredDog) {
+                hoveredDog = true;
+                document.body.style.cursor = 'pointer';
+            }
+            // Reset other hovers
+            if (hoveredItem) {
+                hoveredItem.position.y = hoveredItem.userData.originalY;
+                hoveredItem.material.opacity = 0.98;
+                hoveredItem.scale.set(1, 1, 1);
+                hoveredItem = null;
+            }
+            if (hoveredSpotify && spotifyLogo) {
+                spotifyLogo.onHover(false);
+                hoveredSpotify = false;
             }
         } else {
             // Not hovering anything
@@ -79,6 +109,10 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
                 spotifyLogo.onHover(false);
                 hoveredSpotify = false;
             }
+            if (hoveredDog) {
+                hoveredDog = false;
+                document.body.style.cursor = 'default';
+            }
         }
     }
 
@@ -91,7 +125,6 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
 
         raycaster.setFromCamera(mouse, camera);
 
-
         // Check portfolio items
         const intersects = raycaster.intersectObjects(portfolioItems);
         
@@ -99,13 +132,13 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
         let spotifyIntersects = [];
         if (spotifyLogo) {
             spotifyIntersects = raycaster.intersectObjects(spotifyLogo.getIntersectable());
-            // Debug logging for click
-            if (spotifyIntersects.length > 0) {
-                console.log('Spotify logo click detected:', spotifyIntersects[0].object.userData);
-            }
         }
 
-        
+        // Check dog
+        let dogIntersects = [];
+        if (dog) {
+            dogIntersects = raycaster.intersectObjects(dog.getIntersectable(), true);
+        }
 
         if (intersects.length > 0) {
             const objectId = intersects[0].object.userData.id;
@@ -115,8 +148,13 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
                 spotifyLogo.onClick();
                 openModal('musicModal');
             }
-        } 
-
+        } else if (dogIntersects.length > 0) {
+            if (dog) {
+                dog.onClick();
+                openModal('catModal');
+                // Note: The dog's onClick method will handle opening the cat modal
+            }
+        }
     }
 
     // Add event listeners
@@ -157,11 +195,23 @@ export function setupModals() {
         button.addEventListener('click', closeModal);
     });
 
+    // Also handle dynamically created modals
+    document.addEventListener('click', (event) => {
+        if (event.target.classList.contains('close-button')) {
+            closeModal();
+        }
+    });
+
     window.addEventListener('click', (event) => {
         modals.forEach(modal => {
             if (event.target == modal) {
                 closeModal();
             }
         });
+        
+        // Handle dynamically created modals
+        if (event.target.classList.contains('modal')) {
+            closeModal();
+        }
     });
-} 
+}

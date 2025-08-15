@@ -129,22 +129,22 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">📧 Email</h3>
+                        <h3 class="font-semibold text-gray-800 mb-2">Email</h3>
                         <a href="dereksun@berkeley.edu" class="text-blue-600 hover:text-blue-800">dereksun@berkeley.edu</a>
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">💼 LinkedIn</h3>
+                        <h3 class="font-semibold text-gray-800 mb-2">LinkedIn</h3>
                         <a href="https://linkedin.com/in/dereksun5" target="_blank" class="text-blue-600 hover:text-blue-800">linkedin.com/in/dereksun5</a>
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">🐙 GitHub</h3>
+                        <h3 class="font-semibold text-gray-800 mb-2">GitHub</h3>
                         <a href="https://github.com/sunnidunni" target="_blank" class="text-blue-600 hover:text-blue-800">github.com/sunnidunni</a>
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">📷 Instagram</h3>
+                        <h3 class="font-semibold text-gray-800 mb-2">Instagram</h3>
                         <a href="https://instagram.com/derk_sun/" target="_blank" class="text-blue-600 hover:text-blue-800">instagram.com/derk_sun/</a>
                     </div>
                 </div>
@@ -157,15 +157,41 @@
         </div>
     </div>
 
+    <div id="catModal" class="modal">
+        <div class="modal-content bg-white rounded-lg shadow-2xl">
+            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Found my cat</h2>
+            <div class="space-y-6">
+                <p class="modal-body">You found my cat Taozi</p>
+                
+                <div class="bg-orange-50 p-4 rounded-lg flex justify-center items-center">
+                    <!-- <h3 class="font-semibold text-orange-800 mb-4">Cats vs Dogs</h3>
+                    <div style="text-align: center; font-size: 48px; margin: 20px 0;">
+                        🐱 🐶 🐱
+                    </div> -->
+                    <video width="480" height="360" autoplay muted loop>
+                        <source src="assets/cat1.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-blue-800 mb-2">🐈</h3>
+                    <p class="text-blue-900 text-sm">He seems to like you</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="musicModal" class="modal">
         <div class="modal-content bg-white rounded-lg shadow-2xl">
             <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Music</h2>
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Spotify playlist</h2>
             <div class="space-y-6">
-                <p class="modal-body">Check out what I'm listening to lately!</p>
+                <p class="modal-body">What I've been listening to recently</p>
                 
                 <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-gray-800 mb-4">🎵 Current Artist Obsession</h3>
+                    <h3 class="font-semibold text-gray-800 mb-4">W David</h3>
                     <iframe data-testid="embed-iframe" 
                             style="border-radius:12px" 
                             src="https://open.spotify.com/embed/artist/40tNK2YedBV2jRFAHxpifB?utm_source=generator&theme=0" 
@@ -179,8 +205,8 @@
                 </div>
                 
                 <div class="bg-green-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-green-800 mb-2">🎧 Music & Code</h3>
-                    <p class="text-green-900 text-sm">Music fuels my coding sessions. From lo-fi beats during deep work to upbeat tracks during debugging marathons!</p>
+                    <h3 class="font-semibold text-green-800 mb-2">🎧</h3>
+                    <p class="text-green-900 text-sm">The best afternoon combo? Music + Code</p>
                 </div>
             </div>
         </div>

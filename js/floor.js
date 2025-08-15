@@ -46,7 +46,7 @@ function createNotebookPaperTexture() {
     context.beginPath();
     context.strokeStyle = colors.horizontalLine;
     // UPDATED: Made lines slightly thicker to ensure visibility
-    context.lineWidth = 2.5; 
+    context.lineWidth = 0.5; 
     const lineSpacing = 24;
     for (let y = lineSpacing; y < canvasSize; y += lineSpacing) {
         context.moveTo(0, y);

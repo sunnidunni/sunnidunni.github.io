@@ -46,7 +46,7 @@ class PortfolioApp {
             this.spotifyLogo = createSpotifyLogo();
             
             console.log('Creating wandering dog...');
-            this.wanderingDog = setupWanderingDog(scene);
+            this.wanderingDog = setupWanderingDog(scene, camera);
             
             console.log('Setting up controls...');
             this.controls = setupControls();

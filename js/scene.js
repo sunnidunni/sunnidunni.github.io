@@ -24,10 +24,21 @@ scene.background = new THREE.Color(0x0f172a); // Deep slate blue that complement
 camera.position.set(-5, 8, 10);
 
 // === RESPONSIVENESS ===
+let postProcessingManager = null;
+
+export function setPostProcessingManager(manager) {
+    postProcessingManager = manager;
+}
+
 export function handleResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    // Update post-processing if available
+    if (postProcessingManager) {
+        postProcessingManager.handleResize();
+    }
 }
 
 window.addEventListener('resize', handleResize); 

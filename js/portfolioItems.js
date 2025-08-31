@@ -67,6 +67,26 @@ export function createPortfolioItems() {
     scene.add(contactItem);
     portfolioItems.push(contactItem);
 
+    // Exp Item
+    const expTexture = createTextTexture('Experiences', 512, 768);
+    const expMaterial = new THREE.MeshStandardMaterial({ 
+        map: expTexture, 
+        roughness: 0.05, 
+        metalness: 0.9,
+        transparent: true,
+        opacity: 0.98,
+        envMapIntensity: 1.2
+    });
+    const expItem = new THREE.Mesh(itemGeometry, expMaterial);
+    expItem.position.set(9/Math.sqrt(2), 0.4, 2/Math.sqrt(2)+1);
+    expItem.rotation.x = 0;
+    expItem.rotation.y = 0.1;
+    expItem.rotation.z = 0;
+    expItem.castShadow = true;
+    expItem.userData = { id: 'experience', originalY: 0.4 };
+    scene.add(expItem);
+    portfolioItems.push(expItem);
+
 
     return portfolioItems;
 } 

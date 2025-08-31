@@ -189,6 +189,94 @@ export function createProjectsTexture(width, height) {
 
     return new THREE.CanvasTexture(canvas);
 }
+export function createExperienceTexture(width, height) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    
+    context.imageSmoothingEnabled = false;
+    context.imageSmoothingQuality = 'low';
+
+    // Experience color theory: Futuristic neon grid (career growth)
+    const colors = {
+        bg1: '#0a0f1f',      // Midnight blue (deep base)
+        bg2: '#1e293b',      // Slate 800 (tech blue)
+        bg3: '#2563eb',      // Blue 600 (career path highlight)
+        border: '#f43f5e',   // Rose 500 (bold accent)
+        text: '#f1f5f9',     // Slate 100 (clean white)
+        accent1: '#22d3ee',  // Cyan 400 (neon cyan)
+        accent2: '#a855f7',  // Purple 500 (growth glow)
+        glow: '#fb7185'      // Rose 400 (soft glow)
+    };
+
+    // Gradient career progression background
+    const gradient = context.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, colors.bg2);
+    gradient.addColorStop(1, colors.bg1);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+
+    // Futuristic grid lines
+    const gridSize = 25;
+    context.strokeStyle = colors.bg3 + "40"; // translucent lines
+    context.lineWidth = 1;
+    for (let x = 0; x < width; x += gridSize) {
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, height);
+        context.stroke();
+    }
+    for (let y = 0; y < height; y += gridSize) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(width, y);
+        context.stroke();
+    }
+
+    // Enhanced border with glow
+    context.strokeStyle = colors.border;
+    context.lineWidth = 8;
+    context.shadowColor = colors.glow;
+    context.shadowBlur = 14;
+    context.strokeRect(20, 20, width - 40, height - 40);
+    context.shadowBlur = 0;
+
+    // Pixel art: Briefcase icon (for work/experience)
+    drawPixelArt(context, width / 2 - 50, height / 2 - 140, [
+        "██████████████",
+        "█            █",
+        "█ ██████████ █",
+        "█ █        █ █",
+        "█ ██████████ █",
+        "█            █",
+        "██████████████"
+    ], colors.accent1);
+
+    // Enhanced text
+    context.font = 'bold 56px "Press Start 2P", monospace';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+
+    context.fillStyle = colors.bg1;
+    context.fillText('EXPERIENCE', width / 2 + 6, height / 2 + 30);
+    context.fillStyle = colors.border;
+    context.fillText('EXPERIENCE', width / 2 + 3, height / 2 + 27);
+    context.fillStyle = colors.text;
+    context.fillText('EXPERIENCE', width / 2, height / 2 + 25);
+
+    // Decorative progression dots (career milestones)
+    for (let i = 0; i < 6; i++) {
+        const x = 80 + i * ((width - 160) / 5);
+        const y = height - 60;
+        context.fillStyle = colors.accent2;
+        context.fillRect(x - 6, y - 6, 12, 12);
+        context.fillStyle = colors.accent1;
+        context.fillRect(x - 3, y - 3, 6, 6);
+    }
+
+    return new THREE.CanvasTexture(canvas);
+}
 
 // Create enhanced retro pixel art texture for Contact
 export function createContactTexture(width, height) {
@@ -312,6 +400,8 @@ export function createTextTexture(type, width, height) {
             return createProjectsTexture(width, height);
         case 'Contact':
             return createContactTexture(width, height);
+        case 'Experiences':
+            return createExperienceTexture(width, height)
         default:
             return createAboutMeTexture(width, height);
     }

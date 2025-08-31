@@ -1,36 +1,44 @@
+// lighting.js
 import * as THREE from 'three';
 import { scene } from './scene.js';
 
-// === LIGHTING SETUP ===
-export function setupLighting() {
-    // Ambient light for overall illumination
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-    scene.add(ambientLight);
+export function setupLighting(renderer) {
+    // Physically-based rendering setup
+    if (renderer) {
+        renderer.physicallyCorrectLights = true;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+    }
 
-    // Main directional light for shadows and primary illumination
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    directionalLight.position.set(8, 15, 10);
-    directionalLight.castShadow = true;
-    
-    // Configure shadow properties for crisp shadows
-    directionalLight.shadow.mapSize.width = 4096;
-    directionalLight.shadow.mapSize.height = 4096;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 100;
-    directionalLight.shadow.camera.left = -30;
-    directionalLight.shadow.camera.right = 30;
-    directionalLight.shadow.camera.top = 30;
-    directionalLight.shadow.camera.bottom = -30;
-    directionalLight.shadow.bias = -0.001;
-    scene.add(directionalLight);
+    // Hemisphere ambient light (sky + ground)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    hemiLight.position.set(0, 20, 0);
+    scene.add(hemiLight);
 
-    // Fill light for reducing harsh shadows
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
-    fillLight.position.set(-8, 8, -10);
+    // Strong key light (main light source)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    keyLight.position.set(10, 20, 10);
+    keyLight.castShadow = true;
+
+    // Shadow settings for realism
+    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 100;
+    keyLight.shadow.camera.left = -20;
+    keyLight.shadow.camera.right = 20;
+    keyLight.shadow.camera.top = 20;
+    keyLight.shadow.camera.bottom = -20;
+    keyLight.shadow.bias = -0.0001;
+    scene.add(keyLight);
+
+    // Fill light to soften shadows
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    fillLight.position.set(-10, 10, -5);
     scene.add(fillLight);
 
-    // Rim light for edge highlighting
-    const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
-    rimLight.position.set(0, 5, -15);
+    // Warm rim light for subtle glow
+    const rimLight = new THREE.DirectionalLight(0xffddcc, 0.6);
+    rimLight.position.set(-5, 15, -15);
     scene.add(rimLight);
-} 
+}

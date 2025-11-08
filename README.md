@@ -18,7 +18,7 @@ js/
 └── loading.js        # Loading screen functionality
 ```
 
-## 🚀 How It Works
+## How It Works
 
 ### **main.js** - Application Entry Point
 - Initializes the `PortfolioApp` class
@@ -69,7 +69,7 @@ js/
 - Loading screen functionality
 - Smooth fade-out transitions
 
-## 🔧 Benefits of This Structure
+## Benefits of This Structure
 
 1. **Maintainability** - Each file has a single responsibility
 2. **Readability** - Easy to find and modify specific features
@@ -78,7 +78,7 @@ js/
 5. **Collaboration** - Multiple developers can work on different modules
 6. **Testing** - Individual modules can be tested separately
 
-## 🎯 Key Features
+## Key Features
 
 - **3D Portfolio Cards** - Thick, modern design with different orientations
 - **Infinite White Floor** - Clean, gallery-like environment
@@ -87,14 +87,14 @@ js/
 - **Professional Lighting** - High-quality shadows and atmosphere
 - **Responsive Design** - Adapts to different screen sizes
 
-## 🚀 Getting Started
+## Getting Started
 
 1. Ensure all files are in the `js/` directory
 2. The main entry point is `main.js`
 3. All modules are automatically imported and initialized
 4. The application starts when the DOM is loaded
 
-## 🔄 Adding New Features
+## Adding New Features
 
 To add new features:
 1. Create a new module file (e.g., `newFeature.js`)

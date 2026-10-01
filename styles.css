@@ -679,12 +679,34 @@ h2.label {
 }
 
 .taped {
+    --rx: 0deg;
+    --ry: 0deg;
     position: relative;
     margin: 8px 0 0;
     padding: 10px 10px 34px;
     background: #fbfaf6;
     box-shadow: 0 1px 2px rgba(28, 27, 25, 0.08), 0 12px 28px -12px rgba(28, 27, 25, 0.25);
-    transform: rotate(1.2deg);
+    transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry)) rotate(1.2deg);
+    transition: transform 0.6s var(--ease), box-shadow 0.6s var(--ease);
+}
+
+/* tilts toward the cursor like a print in your hand (see ui.js) */
+.taped.tilting {
+    transition: transform 0.12s linear, box-shadow 0.3s var(--ease);
+    box-shadow: 0 1px 2px rgba(28, 27, 25, 0.08), 0 22px 40px -14px rgba(28, 27, 25, 0.32);
+}
+
+.glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.35), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.taped.tilting .glare {
+    opacity: 1;
 }
 
 .taped::before,
@@ -877,7 +899,7 @@ h2.label + .little-note {
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 80;
+    z-index: 45;
     width: 0;
     height: 0;
     pointer-events: none;
@@ -887,6 +909,10 @@ h2.label + .little-note {
 
 .pencil2d.on {
     opacity: 1;
+}
+
+.pencil2d.in-sheet {
+    z-index: 80;
 }
 
 .pencil2d svg {

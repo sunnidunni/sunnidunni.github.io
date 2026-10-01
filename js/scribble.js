@@ -125,6 +125,8 @@ function next() {
     clearTimeout(parkTimer);
 
     const p = getPencil();
+    // Sit above the sheet only when writing inside it; otherwise stay under its scrim
+    p.classList.toggle('in-sheet', !!job.el.closest('.sheet'));
     // Hop over to where this one starts, then write
     const start = pointOnScreen(job.svg, job.paths[0], 0);
     const wasOn = p.classList.contains('on');

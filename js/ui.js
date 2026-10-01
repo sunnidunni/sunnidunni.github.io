@@ -142,6 +142,29 @@ document.addEventListener('click', event => {
     }
 });
 
+// The cat photo tilts toward the cursor (mouse only, and not with reduced motion)
+const calm = matchMedia('(prefers-reduced-motion: reduce)');
+document.addEventListener('pointermove', event => {
+    const photo = event.target.closest('.taped');
+    if (!photo || event.pointerType !== 'mouse' || calm.matches) return;
+    const r = photo.getBoundingClientRect();
+    const x = (event.clientX - r.left) / r.width - 0.5;
+    const y = (event.clientY - r.top) / r.height - 0.5;
+    photo.classList.add('tilting');
+    photo.style.setProperty('--ry', `${x * 14}deg`);
+    photo.style.setProperty('--rx', `${-y * 10}deg`);
+    photo.style.setProperty('--gx', `${(x + 0.5) * 100}%`);
+    photo.style.setProperty('--gy', `${(y + 0.5) * 100}%`);
+});
+
+document.addEventListener('pointerout', event => {
+    const photo = event.target.closest('.taped');
+    if (!photo || photo.contains(event.relatedTarget)) return;
+    photo.classList.remove('tilting');
+    photo.style.setProperty('--rx', '0deg');
+    photo.style.setProperty('--ry', '0deg');
+});
+
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeSheet();
 });

@@ -1,90 +1,53 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
 
-// === RETRO PIXELATED PARTICLE SYSTEM ===
+// === DUST ===
+// A few soft specks drifting in the light. Barely there on purpose.
 export function setupParticles() {
-    const particleCount = 80; // More particles for retro feel
+    const particleCount = 60;
     const particles = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
+    const positions = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount * 3; i += 3) {
-        particlePositions[i] = (Math.random() - 0.5) * 100;
-        particlePositions[i + 1] = Math.random() * 40;
-        particlePositions[i + 2] = (Math.random() - 0.5) * 100;
+        positions[i] = (Math.random() - 0.5) * 60;
+        positions[i + 1] = Math.random() * 14;
+        positions[i + 2] = (Math.random() - 0.5) * 60;
     }
+    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-    particles.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    
-    // Create retro pixelated particle material
-    const particleMaterial = new THREE.PointsMaterial({
-        map: createRetroParticleTexture(),
-        size: 2,
+    const material = new THREE.PointsMaterial({
+        map: createSpeckTexture(),
+        color: 0x6b675e,
+        size: 0.18,
         transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending
+        opacity: 0.45,
+        depthWrite: false,
     });
 
-    const particleSystem = new THREE.Points(particles, particleMaterial);
+    const particleSystem = new THREE.Points(particles, material);
     scene.add(particleSystem);
-    
     return particleSystem;
 }
 
-// Create retro pixelated particle texture with color theory
-function createRetroParticleTexture() {
+function createSpeckTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const context = canvas.getContext('2d');
-    
-    // Disable anti-aliasing for crisp pixels
-    context.imageSmoothingEnabled = false;
-    context.imageSmoothingQuality = 'low';
-
-    // Clear canvas
-    context.clearRect(0, 0, 16, 16);
-    
-    // Color theory: Harmonious color palette with good contrast
-    const colors = [
-        '#f59e0b',  // Amber (warm)
-        '#10b981',  // Emerald green (cool)
-        '#06b6d4',  // Cyan (cool)
-        '#8b5cf6',  // Purple (neutral)
-        '#f97316'   // Orange (warm)
-    ];
-    
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    // Draw pixelated particle pattern
-    context.fillStyle = color;
-    
-    // Create a retro pixel art pattern
-    const pattern = [
-        "  ██  ",
-        " ██████ ",
-        "████████",
-        " ██████ ",
-        "  ██  "
-    ];
-    
-    pattern.forEach((row, y) => {
-        row.split('').forEach((pixel, x) => {
-            if (pixel === '█') {
-                context.fillRect(x * 2, y * 2, 2, 2);
-            }
-        });
-    });
-
+    canvas.width = canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 32, 32);
     return new THREE.CanvasTexture(canvas);
 }
 
 export function animateParticles(particleSystem) {
     const positions = particleSystem.geometry.attributes.position.array;
-    for (let i = 1; i < positions.length; i += 3) {
-        positions[i] -= 0.08; // Slightly faster for retro feel
-        if (positions[i] < -20) {
-            positions[i] = 20;
-        }
+    const t = performance.now() * 0.0003;
+    for (let i = 0; i < positions.length; i += 3) {
+        positions[i] += Math.sin(t + i) * 0.004;
+        positions[i + 1] -= 0.006;
+        if (positions[i + 1] < 0) positions[i + 1] = 14;
     }
     particleSystem.geometry.attributes.position.needsUpdate = true;
-} 
+}

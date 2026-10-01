@@ -1,87 +1,91 @@
 import * as THREE from 'three';
 
-// === 3D PENCIL CURSOR WITH DYNAMIC TRACES ===
+// === 3D PENCIL ===
+// Follows the cursor, leaning like it's in a right hand. It hovers a little above
+// the paper and presses down when drawing (right-click). It can also take over
+// and write on its own: see write().
+
+const UP = new THREE.Vector3(0, 1, 0);
+const HOVER_HEIGHT = 0.45;
+const INK = 0x34322e;
+
 export class PencilCursor {
     constructor(scene, camera, renderer) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
-        
-        // Pencil properties
-        this.pencil = null;
-        this.pencilTip = null;
-        this.isDrawing = false;
-        
-        // Mouse tracking
-        this.mouse = new THREE.Vector2();
+
+        this.mouse = new THREE.Vector2(0, -0.2);
         this.raycaster = new THREE.Raycaster();
-        this.intersectionPoint = new THREE.Vector3();
-        
-        // Drawing traces
+        this.ground = new THREE.Plane(UP, 0);
+        this.target = new THREE.Vector3();
+        this.tip = new THREE.Vector3();
+        this.velocity = new THREE.Vector3();
+        this.lift = 1;
+
+        this.isDrawing = false;
         this.traces = [];
         this.currentTrace = null;
-        this.traceGeometry = null;
-        this.traceMaterial = null;
-        
-        
-        // Animation properties
-        this.clock = new THREE.Clock();
-        
-        this.init();
-        this.setupEventListeners();
-    }
 
-    init() {
+        this.job = null; // autopilot writing
+
         this.createPencil();
-        this.createTraceMaterial();
+        this.computeLean();
+        this.setupEventListeners();
+        this.aimAtMouse();
+        this.tip.copy(this.target);
     }
 
     createPencil() {
-        const fixedHeight = 20;
-        const pencilGroup = new THREE.Group();
-        
-        // Pencil body (wooden part) - 10x bigger
-        const bodyGeometry = new THREE.CylinderGeometry(0.2, 0.2, 8, 8);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0xDEB887,
-            map: this.createWoodTexture()
-        });
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        const model = new THREE.Group();
+
+        const body = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.2, 8, 6),
+            new THREE.MeshLambertMaterial({ color: 0xdeb887, map: this.createWoodTexture() })
+        );
         body.position.y = 4;
-        pencilGroup.add(body);
+        model.add(body);
 
-        // Metal ferrule (the band) - 10x bigger
-        const ferruleGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.8, 8);
-        const ferruleMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xC0C0C0,
-            metalness: 0.8,
-            roughness: 0.2
-        });
-        const ferrule = new THREE.Mesh(ferruleGeometry, ferruleMaterial);
-        ferrule.position.y = 0;
-        pencilGroup.add(ferrule);
+        const ferrule = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.22, 0.22, 0.8, 12),
+            new THREE.MeshStandardMaterial({ color: 0xbfbab0, metalness: 0.7, roughness: 0.35 })
+        );
+        model.add(ferrule);
 
-        // Eraser - 10x bigger
-        const eraserGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.6, 8);
-        const eraserMaterial = new THREE.MeshLambertMaterial({ color: 0xFF69B4 });
-        const eraser = new THREE.Mesh(eraserGeometry, eraserMaterial);
+        const eraser = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.2, 0.6, 12),
+            new THREE.MeshLambertMaterial({ color: 0xe88aa0 })
+        );
         eraser.position.y = -0.4;
-        pencilGroup.add(eraser);
+        model.add(eraser);
 
-        // Pencil tip (graphite) - 10x bigger
-        const tipGeometry = new THREE.ConeGeometry(0.2, 1, 8);
-        const tipMaterial = new THREE.MeshLambertMaterial({ color: 0x2F2F2F });
-        this.pencilTip = new THREE.Mesh(tipGeometry, tipMaterial);
-        this.pencilTip.position.y = 8.6;
-        pencilGroup.add(this.pencilTip);
+        // Sharpened wood cone, then the graphite point
+        const wood = new THREE.Mesh(
+            new THREE.ConeGeometry(0.2, 0.75, 6),
+            new THREE.MeshLambertMaterial({ color: 0xf0d9b5 })
+        );
+        wood.position.y = 8.375;
+        model.add(wood);
 
-        // Position pencil above the scene initially
-        pencilGroup.position.set(0, 9, 0);
-        pencilGroup.set
-        pencilGroup.rotation.z = Math.PI; // Point tip down
-        
-        this.pencil = pencilGroup;
-        this.scene.add(this.pencil);
+        const lead = new THREE.Mesh(
+            new THREE.ConeGeometry(0.07, 0.25, 8),
+            new THREE.MeshLambertMaterial({ color: 0x2f2f2f })
+        );
+        lead.position.y = 8.875;
+        model.add(lead);
+
+        model.traverse(o => { if (o.isMesh) o.castShadow = true; });
+
+        // Flip so the point faces down, then shift so the point sits at the holder's origin.
+        // The holder pivots at the tip, which is what makes leaning look right.
+        model.rotation.z = Math.PI;
+        model.position.y = 9.0;
+        model.scale.setScalar(0.8);
+        model.position.y *= 0.8;
+
+        this.holder = new THREE.Group();
+        this.holder.add(model);
+        this.scene.add(this.holder);
     }
 
     createWoodTexture() {
@@ -89,263 +93,228 @@ export class PencilCursor {
         canvas.width = 64;
         canvas.height = 256;
         const ctx = canvas.getContext('2d');
-        
-        // Wood grain pattern
-        const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-        gradient.addColorStop(0, '#DEB887');
-        gradient.addColorStop(0.5, '#D2B48C');
-        gradient.addColorStop(1, '#CD853F');
-        
+        const gradient = ctx.createLinearGradient(0, 0, 64, 0);
+        gradient.addColorStop(0, '#d9a441');
+        gradient.addColorStop(0.5, '#f2c25a');
+        gradient.addColorStop(1, '#c98f2e');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 64, 256);
-        
-        // Add wood grain lines
-        ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
-        ctx.lineWidth = 0.2;
-        for (let i = 0; i < 10; i++) {
-            const y = (i / 10) * 256;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(64, y + Math.sin(i) * 10);
-            ctx.stroke();
-        }
-        
+        // Painted hex faces
+        ctx.fillStyle = 'rgba(0,0,0,0.06)';
+        for (let i = 0; i < 6; i += 2) ctx.fillRect((i / 6) * 64, 0, 64 / 6, 256);
         const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
+        texture.colorSpace = THREE.SRGBColorSpace;
         return texture;
     }
 
-    createTraceMaterial() {
-        this.traceMaterial = new THREE.MeshBasicMaterial({
-            color: 0x2F2F2F,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide
-        });
+    // Screen-aligned directions on the desk: right, and "up the page" (away from camera)
+    computeLean() {
+        const f = new THREE.Vector3();
+        this.camera.getWorldDirection(f);
+        f.y = 0;
+        f.normalize();
+        this.forward = f;
+        this.right = new THREE.Vector3(-f.z, 0, f.x);
+        // Top of the pencil tips toward the bottom-right of the screen
+        this.leanDir = this.right.clone().multiplyScalar(0.9).addScaledVector(f, -0.35).normalize();
     }
 
     setupEventListeners() {
         const canvas = this.renderer.domElement;
-        
+
         canvas.addEventListener('mousemove', (event) => {
-            this.updateMousePosition(event);
-            this.updatePencilPosition();
+            const rect = canvas.getBoundingClientRect();
+            this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         });
 
         canvas.addEventListener('mousedown', (event) => {
-            if (event.button === 2) { // Left click
-                this.startDrawing();
-            }
+            if (event.button === 2 && !this.job) this.startDrawing();
         });
 
         // Right-click draws, so keep the browser menu out of the way
         canvas.addEventListener('contextmenu', (event) => event.preventDefault());
-
-        canvas.addEventListener('mouseup', () => {
-            this.stopDrawing();
-        });
-
-        canvas.addEventListener('mouseleave', () => {
-            this.stopDrawing();
-        });
+        canvas.addEventListener('mouseup', () => this.stopDrawing());
+        canvas.addEventListener('mouseleave', () => this.stopDrawing());
     }
 
-    updateMousePosition(event) {
-        const rect = this.renderer.domElement.getBoundingClientRect();
-        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    }
-
-    updatePencilPosition() {
+    aimAtMouse() {
         this.raycaster.setFromCamera(this.mouse, this.camera);
-        
-        // Define a plane at a constant height
-        const fixedHeight = 0; // The height where you want the pencil tip to be
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -fixedHeight);
-        
-        const intersectionPoint = new THREE.Vector3();
-        this.raycaster.ray.intersectPlane(plane, intersectionPoint);
-        
-        if (intersectionPoint) {
-            
-            // Adjust the pencil's position so the tip is at the fixed height.
-            this.pencil.position.set(
-                intersectionPoint.x,
-                fixedHeight + 8.8,
-                intersectionPoint.z
-            );
-            
-            // // Tilt pencil based on mouse movement
-            // const tiltX = this.mouse.y * 0.2;
-            // const tiltZ = -this.mouse.x * 0.2;
-            // this.pencil.rotation.set(tiltX, 0, Math.PI + tiltZ);
-    
-            // Store the *tip's* position for drawing traces
-            this.intersectionPoint.copy(intersectionPoint);
-        }
+        const hit = new THREE.Vector3();
+        if (this.raycaster.ray.intersectPlane(this.ground, hit)) this.target.copy(hit);
     }
+
+    // Where a point on screen (NDC) lands on the desk
+    groundAt(ndcX, ndcY) {
+        this.raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+        const hit = new THREE.Vector3();
+        this.raycaster.ray.intersectPlane(this.ground, hit);
+        return hit;
+    }
+
+    // --- freehand doodling --------------------------------------------------
 
     startDrawing() {
-        if (!this.isDrawing && this.intersectionPoint) {
-            this.isDrawing = true;
-            this.createNewTrace();
-            
-            // Add slight animation to pencil tip
-            this.animatePencilTip();
-        }
-    }
-
-    stopDrawing() {
-        if (this.isDrawing) {
-            this.isDrawing = false;
-            this.currentTrace = null;
-        }
-    }
-
-    createNewTrace() {
-        const tracePoints = [];
-        tracePoints.push(this.intersectionPoint.clone());
-        
-        this.currentTrace = {
-            points: tracePoints,
-            mesh: null,
-            age: 0,
-            maxAge: 5000, // 8 seconds lifetime
-            width: 1, // 10x bigger trace width
-            segments: [] // Store individual segments for gradual fade
-        };
-        
+        this.isDrawing = true;
+        this.currentTrace = { last: this.tip.clone(), segments: [] };
         this.traces.push(this.currentTrace);
     }
 
+    stopDrawing() {
+        this.isDrawing = false;
+        this.currentTrace = null;
+    }
+
     addTracePoint() {
-        if (this.currentTrace && this.intersectionPoint) {
-            const lastPoint = this.currentTrace.points[this.currentTrace.points.length - 1];
-            const distance = lastPoint.distanceTo(this.intersectionPoint);
-            
-            // Much more sensitive threshold for smoother lines
-            if (distance > 0.3) {
-                this.currentTrace.points.push(this.intersectionPoint.clone());
-                this.createTraceSegment(lastPoint, this.intersectionPoint.clone());
-            }
-        }
+        const last = this.currentTrace.last;
+        if (last.distanceTo(this.tip) < 0.12) return;
+        const mesh = new THREE.Mesh(
+            ribbonGeometry([[last.clone(), this.tip.clone()]], 0.07).geometry,
+            new THREE.MeshBasicMaterial({ color: INK, transparent: true, opacity: 0.85, depthWrite: false })
+        );
+        mesh.position.y = 0.014;
+        this.scene.add(mesh);
+        this.currentTrace.segments.push({ mesh, born: performance.now() });
+        this.currentTrace.last = this.tip.clone();
     }
 
-    createTraceSegment(startPoint, endPoint) {
-        if (!this.currentTrace) return;
-        
-        // Create a small tube segment between two points
-        const points = [startPoint, endPoint];
-        const curve = new THREE.CatmullRomCurve3(points);
-        const segmentGeometry = new THREE.TubeGeometry(curve, 8, 0.15, 8, false);
-        
-        const segmentMaterial = new THREE.MeshBasicMaterial({
-            color: 0x2F2F2F,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide
-        });
-        
-        const segmentMesh = new THREE.Mesh(segmentGeometry, segmentMaterial);
-        segmentMesh.position.y = 0.05;
-        
-        const segment = {
-            mesh: segmentMesh,
-            age: 0,
-            creationTime: Date.now()
-        };
-        
-        this.currentTrace.segments.push(segment);
-        this.scene.add(segmentMesh);
-    }
-
-    animatePencilTip() {
-        if (this.pencilTip) {
-            // Small bounce animation
-            const originalScale = this.pencilTip.scale.clone();
-            this.pencilTip.scale.multiplyScalar(0.9);
-            
-            setTimeout(() => {
-                if (this.pencilTip) {
-                    this.pencilTip.scale.copy(originalScale);
-                }
-            }, 100);
-        }
-    }
-
-    update() {
-        const deltaTime = this.clock.getDelta() * 1000;
-        const currentTime = Date.now();
-        
-        // Add trace point if drawing
-        if (this.isDrawing) {
-            this.addTracePoint();
-        }
-        
-        // Update existing traces with gradual segment fading
+    fadeTraces() {
+        const now = performance.now();
+        const life = 6000;
         this.traces = this.traces.filter(trace => {
-            trace.age += deltaTime;
-            
-            // Update segments with gradual fade from oldest to newest
-            if (trace.segments) {
-                trace.segments = trace.segments.filter(segment => {
-                    const segmentAge = currentTime - segment.creationTime;
-                    const maxSegmentAge = 6000; // 6 seconds per segment
-                    
-                    if (segmentAge > maxSegmentAge) {
-                        // Remove old segments
-                        this.scene.remove(segment.mesh);
-                        segment.mesh.geometry.dispose();
-                        segment.mesh.material.dispose();
-                        return false;
-                    } else if (segmentAge > maxSegmentAge * 0.5) {
-                        // Start fading after 3 seconds
-                        const fadeStart = maxSegmentAge * 0.5;
-                        const fadeProgress = (segmentAge - fadeStart) / (maxSegmentAge - fadeStart);
-                        segment.mesh.material.opacity = 0.8 * (1 - fadeProgress);
-                    }
-                    
-                    return true;
-                });
-            }
-            
-            // Remove trace if it has no more segments
-            if (trace.segments && trace.segments.length === 0 && trace.age > 1000) {
-                return false;
-            }
-            
-            return true;
+            trace.segments = trace.segments.filter(seg => {
+                const age = now - seg.born;
+                if (age > life) {
+                    this.scene.remove(seg.mesh);
+                    seg.mesh.geometry.dispose();
+                    seg.mesh.material.dispose();
+                    return false;
+                }
+                if (age > life / 2) seg.mesh.material.opacity = 0.85 * (1 - (age - life / 2) / (life / 2));
+                return true;
+            });
+            return trace.segments.length > 0 || trace === this.currentTrace;
         });
     }
 
-    dispose() {
-        // Clean up resources
-        if (this.pencil) {
-            this.scene.remove(this.pencil);
-        }
-        
-        this.traces.forEach(trace => {
-            if (trace.mesh) {
-                this.scene.remove(trace.mesh);
-                trace.mesh.geometry.dispose();
-                trace.mesh.material.dispose();
+    // --- autopilot writing ----------------------------------------------------
+
+    // strokes: arrays of world-space Vector3 on the desk. Resolves when done.
+    write(strokes, { speed = 15, travel = 34, width = 0.06 } = {}) {
+        const ink = ribbonGeometry(strokes, width);
+        const mesh = new THREE.Mesh(ink.geometry, new THREE.MeshBasicMaterial({
+            color: INK, transparent: true, opacity: 0.9, depthWrite: false,
+            polygonOffset: true, polygonOffsetFactor: -1,
+        }));
+        mesh.position.y = 0.012;
+        mesh.geometry.setDrawRange(0, 0);
+        this.scene.add(mesh);
+
+        // Timeline: pen-up hops between strokes, pen-down along them
+        const moves = [];
+        let at = this.tip.clone();
+        let segIndex = 0;
+        strokes.forEach(stroke => {
+            moves.push({ from: at, to: stroke[0], len: at.distanceTo(stroke[0]), down: false });
+            for (let i = 1; i < stroke.length; i++) {
+                moves.push({ from: stroke[i - 1], to: stroke[i], len: stroke[i - 1].distanceTo(stroke[i]), down: true, seg: segIndex++ });
             }
-            
-            if (trace.segments) {
-                trace.segments.forEach(segment => {
-                    this.scene.remove(segment.mesh);
-                    segment.mesh.geometry.dispose();
-                    segment.mesh.material.dispose();
-                });
-            }
+            at = stroke[stroke.length - 1];
         });
-        
-        this.traces = [];
+
+        this.stopDrawing();
+        return new Promise(resolve => {
+            this.job = { moves, index: 0, t: 0, speed, travel, mesh, resolve };
+        });
+    }
+
+    stepJob(dt) {
+        const job = this.job;
+        let budget = dt;
+        while (budget > 0 && job.index < job.moves.length) {
+            const m = job.moves[job.index];
+            const rate = m.down ? job.speed : job.travel;
+            const need = (m.len * (1 - job.t)) / rate;
+            if (budget >= need) {
+                budget -= need;
+                job.index++;
+                job.t = 0;
+                if (m.down) job.mesh.geometry.setDrawRange(0, (m.seg + 1) * 6);
+            } else {
+                job.t += (budget * rate) / (m.len || 1);
+                budget = 0;
+            }
+        }
+
+        const m = job.moves[Math.min(job.index, job.moves.length - 1)];
+        const t = job.index >= job.moves.length ? 1 : job.t;
+        this.target.lerpVectors(m.from, m.to, t);
+        this.pressing = m.down && job.index < job.moves.length;
+
+        if (job.index >= job.moves.length) {
+            this.job = null;
+            this.pressing = false;
+            job.resolve();
+        }
+    }
+
+    // --- per frame ------------------------------------------------------------
+
+    update(dt = 1 / 60) {
+        if (this.job) this.stepJob(dt);
+        else this.aimAtMouse();
+
+        // Follow: snappy when writing, a touch of lag when chasing the cursor
+        const prev = this.tip.clone();
+        const follow = this.job ? 1 : 1 - Math.exp(-dt * 22);
+        this.tip.lerp(this.target, follow);
+        this.velocity.subVectors(this.tip, prev).divideScalar(Math.max(dt, 1e-3));
+
+        const down = this.job ? this.pressing : this.isDrawing;
+        this.lift += ((down ? 0 : 1) - this.lift) * (1 - Math.exp(-dt * 18));
+
+        this.holder.position.set(this.tip.x, this.lift * HOVER_HEIGHT, this.tip.z);
+
+        // Lean, plus a little drag opposite to the direction of travel
+        const drag = this.velocity.clone().multiplyScalar(-0.005).clampLength(0, 0.15);
+        const LEAN = 0.32;
+        const axis = UP.clone().multiplyScalar(Math.cos(LEAN))
+            .addScaledVector(this.leanDir, Math.sin(LEAN))
+            .add(drag)
+            .normalize();
+        this.holder.quaternion.setFromUnitVectors(UP, axis);
+
+        if (this.isDrawing && !this.job) this.addTracePoint();
+        this.fadeTraces();
     }
 }
 
-// Export setup function for easy integration
+// Flat ribbons on the desk. Six vertices per segment, in drawing order,
+// so setDrawRange(0, n * 6) reveals the first n segments.
+function ribbonGeometry(strokes, halfWidth) {
+    const pos = [];
+    const dir = new THREE.Vector3();
+    const n = new THREE.Vector3();
+    strokes.forEach(stroke => {
+        for (let i = 1; i < stroke.length; i++) {
+            const a = stroke[i - 1], b = stroke[i];
+            dir.subVectors(b, a).setY(0);
+            if (dir.lengthSq() < 1e-8) dir.set(1, 0, 0);
+            dir.normalize();
+            n.set(-dir.z, 0, dir.x).multiplyScalar(halfWidth);
+            // Overlap the ends a bit so corners don't show gaps
+            const a0 = a.clone().addScaledVector(dir, -halfWidth * 0.8);
+            const b0 = b.clone().addScaledVector(dir, halfWidth * 0.8);
+            const p = [a0.clone().add(n), a0.clone().sub(n), b0.clone().add(n), b0.clone().sub(n)];
+            // Wound so the faces point up (back faces get culled)
+            [p[0], p[2], p[1], p[2], p[3], p[1]].forEach(v => pos.push(v.x, 0, v.z));
+        }
+    });
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    return { geometry };
+}
+
 export function setupPencilCursor(scene, camera, renderer) {
     return new PencilCursor(scene, camera, renderer);
 }

@@ -5,11 +5,12 @@ import { setupFloor } from './floor.js';
 import { setupParticles, animateParticles } from './particles.js';
 import { createPortfolioItems } from './portfolioItems.js';
 import { setupControls } from './controls.js';
-import { setupInteraction, animateCards } from './interaction.js';
+import { setupInteraction } from './interaction.js';
 import { sceneReady } from './ui.js';
 import { setupPencilCursor } from './pencil.js';
 import { createSpotifyLogo } from './spotifyLogo.js';
 import { setupWanderingDog } from './dog.js';
+import { writeText } from './handwriting.js';
 
 // === MAIN APPLICATION ===
 class PortfolioApp {
@@ -22,6 +23,7 @@ class PortfolioApp {
         this.pencilCursor = null;
         this.wanderingDog = null;
         this.running = false;
+        this.clock = new THREE.Clock();
 
         this.init();
     }
@@ -81,6 +83,8 @@ class PortfolioApp {
         }
         requestAnimationFrame(() => this.animate());
         this.frameCount++;
+        const dt = Math.min(this.clock.getDelta(), 0.05);
+        const time = this.clock.elapsedTime;
 
         try {
             // Hide loading screen after a few frames
@@ -95,7 +99,12 @@ class PortfolioApp {
             
             // Update pencil cursor
             if (this.pencilCursor) {
-                this.pencilCursor.update();
+                this.pencilCursor.update(dt);
+                // Once the notes have landed, the pencil says hi
+                if (!this.saidHello && this.portfolioItems.every(c => c.landed)) {
+                    this.saidHello = true;
+                    this.writeHello();
+                }
             }
 
             // Update wandering dog
@@ -103,8 +112,8 @@ class PortfolioApp {
                 this.wanderingDog.update();
             }
 
-            // Ease cards in and out of hover
-            animateCards(this.portfolioItems);
+            // Notes: toss-in, hover peek, open/close
+            this.portfolioItems.forEach(card => card.update(dt, time));
 
             // Animate floating decorative elements
             this.animateFloatingElements();
@@ -120,6 +129,25 @@ class PortfolioApp {
         } catch (error) {
             console.error('Error in animation loop:', error);
         }
+    }
+
+    // Handwrite a greeting on the desk, lined up with the screen
+    async writeHello() {
+        const pencil = this.pencilCursor;
+        const place = (strokes, origin, size) => strokes.map(stroke => stroke.map(([x, y]) =>
+            origin.clone()
+                .addScaledVector(pencil.right, x * size)
+                .addScaledVector(pencil.forward, -y * size)
+        ));
+
+        const em = 2.1;
+        const start = pencil.groundAt(-0.8, -0.36);
+        const below = start.clone()
+            .addScaledVector(pencil.forward, -em * 1.2)
+            .addScaledVector(pencil.right, em * 0.25);
+
+        await pencil.write(place(writeText("hi, i'm derek"), start, em));
+        await pencil.write(place(writeText('(pick a note)'), below, em * 0.6), { width: 0.045 });
     }
 
     // Animate floating decorative elements

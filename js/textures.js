@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { renderer } from './scene.js';
+import { writeText, doodle, strokeOnCanvas } from './handwriting.js';
 
-// === INDEX CARD TEXTURES ===
-// Each portfolio item is an index card dropped on the desk:
-// warm card stock, a red header rule, faint blue lines, and a big italic title.
+// === NOTE TEXTURES ===
+// Each portfolio item is a folded note on the desk. The cover is printed (title),
+// the inside is handwritten in pencil, the back of the cover is blank stock.
 
 const W = 1024;
 const H = 1536;
@@ -17,9 +18,9 @@ const ink = {
     accent: '#2f4fd6',
 };
 
-function drawCard(ctx, { number, title, note }) {
+// Card stock with faint grain and blue rules; optional red header line
+function drawStock(ctx, { header = true } = {}) {
     ctx.clearRect(0, 0, W, H);
-
     ctx.fillStyle = ink.card;
     ctx.fillRect(0, 0, W, H);
 
@@ -33,7 +34,6 @@ function drawCard(ctx, { number, title, note }) {
     }
     ctx.putImageData(grain, 0, 0);
 
-    // Ruled lines
     ctx.strokeStyle = ink.rule;
     ctx.lineWidth = 3;
     for (let y = 340; y < H - 80; y += 96) {
@@ -43,13 +43,18 @@ function drawCard(ctx, { number, title, note }) {
         ctx.stroke();
     }
 
-    // Red header rule
-    ctx.strokeStyle = ink.header;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(0, 230);
-    ctx.lineTo(W, 230);
-    ctx.stroke();
+    if (header) {
+        ctx.strokeStyle = ink.header;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 230);
+        ctx.lineTo(W, 230);
+        ctx.stroke();
+    }
+}
+
+function drawCard(ctx, { number, title, note }) {
+    drawStock(ctx);
 
     const pad = 96;
 
@@ -79,17 +84,45 @@ function drawCard(ctx, { number, title, note }) {
     ctx.fillText('open →', pad, H - 120);
 }
 
-export function createCardTexture(content) {
+function makeTexture(draw) {
     const canvas = document.createElement('canvas');
     canvas.width = W;
     canvas.height = H;
-    const ctx = canvas.getContext('2d');
-
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    draw(ctx);
+    return { ctx, texture };
+}
 
-    drawCard(ctx, content);
+// Inside of the note: a few lines in pencil on the rules, and a doodle
+function drawInside(ctx, { inside = [], doodle: name = 'star' }) {
+    drawStock(ctx, { header: false });
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 7;
+    inside.forEach((line, i) => {
+        ctx.strokeStyle = i === 0 ? ink.accent : 'rgba(52, 50, 46, 0.88)';
+        strokeOnCanvas(ctx, writeText(line), 110, 424 + i * 192, 150);
+    });
+
+    ctx.strokeStyle = 'rgba(52, 50, 46, 0.75)';
+    ctx.lineWidth = 6;
+    strokeOnCanvas(ctx, doodle(name, 200, 180), W - 330, H - 360, 1);
+}
+
+export function createInsideTexture(content) {
+    return makeTexture(ctx => drawInside(ctx, content)).texture;
+}
+
+export function createBackTexture() {
+    return makeTexture(ctx => drawStock(ctx, { header: false })).texture;
+}
+
+export function createCardTexture(content) {
+    const { ctx, texture } = makeTexture(ctx => drawCard(ctx, content));
 
     // Web fonts may still be loading; redraw once they land
     Promise.all([

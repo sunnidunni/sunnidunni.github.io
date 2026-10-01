@@ -3,25 +3,32 @@ import { camera, renderer } from './scene.js';
 import { openSheet, isSheetOpen } from './ui.js';
 
 // === INTERACTION SETUP ===
-const HOVER_LIFT = 0.35;
-const HOVER_SCALE = 1.04;
 const DRAG_TOLERANCE = 5; // px; anything more was a pan, not a click
+const OPEN_DELAY = 380;   // ms: let the note flip open before the sheet slides in
 
-export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null) {
+export function setupInteraction(cards, spotifyLogo = null, dog = null) {
     const canvas = renderer.domElement;
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    const roots = cards.map(c => c.root);
     let hovered = null; // 'card' | 'spotify' | 'dog' | null
-    let hoveredItem = null;
+    let hoveredCard = null;
     let downAt = null;
+    let opening = false;
+
+    function cardFrom(object) {
+        while (object && !object.userData.card) object = object.parent;
+        return object ? object.userData.card : null;
+    }
 
     function pick(event) {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
 
-        const card = raycaster.intersectObjects(portfolioItems)[0];
-        if (card) return { kind: 'card', object: card.object };
+        const hit = raycaster.intersectObjects(roots, true)[0];
+        const card = hit && cardFrom(hit.object);
+        if (card && card.landed) return { kind: 'card', card };
         if (spotifyLogo && raycaster.intersectObjects(spotifyLogo.getIntersectable()).length) {
             return { kind: 'spotify' };
         }
@@ -32,11 +39,11 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
     }
 
     function setHover(hit) {
-        const item = hit.kind === 'card' ? hit.object : null;
-        if (item !== hoveredItem) {
-            if (hoveredItem) hoveredItem.userData.hover = 0;
-            if (item) item.userData.hover = 1;
-            hoveredItem = item;
+        const card = hit.kind === 'card' ? hit.card : null;
+        if (card !== hoveredCard) {
+            if (hoveredCard) hoveredCard.isHovered = false;
+            if (card) card.isHovered = true;
+            hoveredCard = card;
         }
         if (hit.kind !== hovered) {
             if (spotifyLogo && (hovered === 'spotify' || hit.kind === 'spotify')) {
@@ -53,7 +60,7 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
         if (now - lastMove < 16) return; // ~60fps
         lastMove = now;
 
-        if (isSheetOpen() || event.target !== canvas) {
+        if (isSheetOpen() || opening || event.target !== canvas) {
             setHover({ kind: null });
             return;
         }
@@ -65,12 +72,18 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
     }
 
     function onClick(event) {
-        if (isSheetOpen() || event.target !== canvas) return;
+        if (isSheetOpen() || opening || event.target !== canvas) return;
         if (downAt && Math.hypot(event.clientX - downAt.x, event.clientY - downAt.y) > DRAG_TOLERANCE) return;
 
         const hit = pick(event);
         if (hit.kind === 'card') {
-            openSheet(hit.object.userData.id);
+            opening = true;
+            setHover({ kind: null });
+            hit.card.open();
+            setTimeout(() => {
+                opening = false;
+                openSheet(hit.card.id);
+            }, OPEN_DELAY);
         } else if (hit.kind === 'spotify') {
             spotifyLogo.onClick();
             openSheet('music');
@@ -80,19 +93,12 @@ export function setupInteraction(portfolioItems, spotifyLogo = null, dog = null)
         }
     }
 
+    // Fold every note back up when the sheet goes away
+    document.addEventListener('sheetclose', () => cards.forEach(c => c.close()));
+
     window.addEventListener('mousemove', onMouseMove, false);
     canvas.addEventListener('pointerdown', onPointerDown, false);
     canvas.addEventListener('click', onClick, false);
 
     return { raycaster, mouse };
-}
-
-// Ease cards toward their hover state each frame instead of snapping
-export function animateCards(portfolioItems) {
-    portfolioItems.forEach(item => {
-        const d = item.userData;
-        d.h = (d.h || 0) + ((d.hover || 0) - (d.h || 0)) * 0.15;
-        item.position.y = d.originalY + d.h * HOVER_LIFT;
-        item.scale.setScalar(1 + d.h * (HOVER_SCALE - 1));
-    });
 }

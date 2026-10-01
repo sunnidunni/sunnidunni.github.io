@@ -1,6 +1,8 @@
 // === UI: mode switching, the slide-in sheet, and the music player ===
 // No three.js in here, so the 2D page works even if the 3D scene never loads.
 
+import { decorate } from './scribble.js';
+
 const root = document.documentElement;
 const sheet = document.getElementById('sheet');
 const sheetBody = sheet.querySelector('.sheet-body');
@@ -71,6 +73,7 @@ export function openSheet(key) {
     clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
     sheetBody.replaceChildren(clone);
     clone.querySelectorAll('[data-player]').forEach(p => playTrack(p, currentTrack));
+    decorate(clone);
 
     lastFocus = document.activeElement;
     sheet.setAttribute('aria-hidden', 'false');
@@ -83,6 +86,7 @@ export function closeSheet() {
     if (!isSheetOpen()) return;
     sheet.classList.remove('open');
     sheet.setAttribute('aria-hidden', 'true');
+    document.dispatchEvent(new CustomEvent('sheetclose'));
     // Empty it after the slide-out so embeds and video stop
     clearTimer = setTimeout(() => sheetBody.replaceChildren(), 400);
     if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
@@ -143,4 +147,5 @@ document.addEventListener('keydown', event => {
 });
 
 syncToggle();
+decorate(document.getElementById('flat'));
 if (getMode() === '3d') boot3D();

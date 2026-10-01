@@ -65,7 +65,7 @@ function drawCard(ctx, { number, title, note }) {
     ctx.textAlign = 'left';
     ctx.fillText(number, pad, 170);
     ctx.textAlign = 'right';
-    ctx.fillText('derek sun', W - pad, 170);
+    ctx.fillText('derek', W - pad, 170);
 
     // Title
     ctx.textAlign = 'left';

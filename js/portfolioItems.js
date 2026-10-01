@@ -11,10 +11,10 @@ const D = 6;
 const LEAF = 0.05;
 
 const CARDS = [
-    { id: 'about',      number: '01', title: 'about',    note: 'who, what, why',  inside: ["hey, it's derek", 'ml, systems,', 'side quests'], doodle: 'sparkle', position: [-0.6, 5.2],  rotation: -0.22 },
+    { id: 'about',      number: '01', title: 'about',    note: 'who, what, why',  inside: ["hey, it's derek", 'ml, systems,', 'side projects'], doodle: 'sparkle', position: [-0.6, 5.2],  rotation: -0.22 },
     { id: 'experience', number: '02', title: 'work',     note: "where i've been", inside: ['google, pixel ai', 'okc thunder,', 'citris, athena...'], doodle: 'star',    position: [6.4, 2.6],   rotation: -0.68 },
-    { id: 'projects',   number: '03', title: 'projects', note: 'things i made',   inside: ['things i built', 'for fun, mostly', '(9k users tho)'], doodle: 'spiral',  position: [4.2, -4.6],  rotation: -0.36 },
-    { id: 'contact',    number: '04', title: 'say hi',   note: 'inbox is open',   inside: ['write back!', 'i reply', 'fast-ish'],                   doodle: 'heart',   position: [-4.8, -3.6], rotation: -0.55 },
+    { id: 'projects',   number: '03', title: 'projects', note: 'things i made',   inside: ['things i built', 'intellicrawl,', 'gameshop...'], doodle: 'spiral',  position: [4.2, -4.6],  rotation: -0.36 },
+    { id: 'contact',    number: '04', title: 'say hi',   note: 'inbox is open',   inside: ['inbox is open', 'email works', 'best'],                   doodle: 'heart',   position: [-4.8, -3.6], rotation: -0.55 },
 ];
 
 const OPEN_ANGLE = Math.PI * 0.94;

@@ -711,14 +711,6 @@ h2.label {
     margin-top: 20px;
 }
 
-.aura {
-    display: inline-block;
-    margin-left: 6px;
-    font-size: 13px;
-    color: var(--accent);
-    vertical-align: middle;
-}
-
 /* ==========================================================================
    paper + scribbles
    ========================================================================== */
@@ -820,28 +812,23 @@ h2.label {
     height: 9px;
 }
 
-/* "i circled it" */
-.circled {
-    position: relative;
-    display: inline-block;
-    margin-right: 8px;
+/* small asides, written in pencil */
+.little-note {
+    margin-left: 10px;
+    font-size: 12px;
+    vertical-align: -0.35em;
 }
 
-.circle {
-    position: absolute;
-    left: -8px;
-    top: -5px;
-    width: calc(100% + 16px);
-    height: calc(100% + 10px);
-    color: var(--accent);
+h2.label + .little-note {
+    margin-left: 18px;
+    vertical-align: -0.2em;
 }
 
-.star {
-    width: 16px;
-    height: 16px;
-    margin-left: 8px;
-    vertical-align: -2px;
-    color: var(--accent);
+.tags {
+    margin-top: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
 }
 
 .music-doodle {
@@ -868,9 +855,9 @@ h2.label {
 .plane {
     position: absolute;
     right: 0;
-    top: -58px;
-    width: 140px;
-    height: 54px;
+    top: -14px;
+    width: 120px;
+    height: 46px;
 }
 
 .cat-link {
@@ -883,71 +870,6 @@ h2.label {
     width: 22px;
     height: 18px;
     color: inherit;
-}
-
-/* margin notes: out in the margin on wide screens, tucked under on narrow ones */
-.row,
-.aside {
-    position: relative;
-}
-
-.margin-note {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 6px;
-    font-size: 14px;
-    color: var(--pen);
-    transform: rotate(-2deg);
-    transform-origin: left center;
-    pointer-events: none;
-}
-
-.note-arrow {
-    display: none;
-    width: 46px;
-    height: 22px;
-}
-
-@media (min-width: 1120px) {
-    .margin-note {
-        position: absolute;
-        top: 12px;
-        left: calc(100% + 12px);
-        margin: 0;
-        white-space: nowrap;
-        transform: rotate(-5deg);
-    }
-
-    .aside .margin-note {
-        top: -4px;
-        left: calc(100% + 40px);
-    }
-
-    .margin-note.up {
-        top: auto;
-        bottom: 8px;
-    }
-
-    .note-arrow {
-        display: inline-block;
-    }
-
-    .margin-note.up .note-arrow {
-        width: 40px;
-        height: 40px;
-    }
-
-    /* the sheet is narrow: keep notes inside it */
-    .sheet-body .margin-note {
-        position: static;
-        margin-top: 6px;
-        transform: rotate(-2deg);
-    }
-
-    .sheet-body .note-arrow {
-        display: none;
-    }
 }
 
 /* the little pencil that writes them */
@@ -1050,14 +972,6 @@ h2.label {
 
     .plane {
         display: none;
-    }
-
-    .margin-note {
-        font-size: 11px;
-    }
-
-    .row .margin-note {
-        grid-column: 2;
     }
 
     .foot .quiet:last-child {

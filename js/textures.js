@@ -65,7 +65,7 @@ function drawCard(ctx, { number, title, note }) {
     ctx.textAlign = 'left';
     ctx.fillText(number, pad, 170);
     ctx.textAlign = 'right';
-    ctx.fillText('derek', W - pad, 170);
+    ctx.fillText('Derek', W - pad, 170);
 
     // Title
     ctx.textAlign = 'left';
@@ -81,7 +81,7 @@ function drawCard(ctx, { number, title, note }) {
     // Footer
     ctx.fillStyle = ink.accent;
     ctx.font = '64px "JetBrains Mono", ui-monospace, monospace';
-    ctx.fillText('open →', pad, H - 120);
+    ctx.fillText('Open →', pad, H - 120);
 }
 
 function makeTexture(draw) {

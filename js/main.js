@@ -146,8 +146,8 @@ class PortfolioApp {
             .addScaledVector(pencil.forward, -em * 1.2)
             .addScaledVector(pencil.right, em * 0.25);
 
-        await pencil.write(place(writeText("hi, i'm derek"), start, em));
-        await pencil.write(place(writeText('(pick a note)'), below, em * 0.6), { width: 0.045 });
+        await pencil.write(place(writeText("Hi, I'm Derek"), start, em));
+        await pencil.write(place(writeText('(Pick a note)'), below, em * 0.6), { width: 0.045 });
     }
 
     // Animate floating decorative elements

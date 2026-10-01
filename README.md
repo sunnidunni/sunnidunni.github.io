@@ -2,7 +2,7 @@
 
 Personal site. Two ways to see it:
 
-- **3d** — a desk. Folded notes get tossed onto it, then a pencil writes "hi, i'm derek" on the paper. Click a note and it flips open, and a notebook page swings in with the details. The pencil follows the cursor (right-click to doodle). There's also a sketched Spotify logo and a cat named Taozi who doesn't want to be caught.
+- **3d** — a desk. Folded notes get tossed onto it, then a pencil writes "Hi, I'm Derek" on the paper. Click a note and it flips open, and a notebook page swings in with the details. The pencil follows the cursor (right-click to doodle). There's also a sketched Spotify logo and a cat named Taozi who doesn't want to be caught.
 - **2d** — one page on notebook paper with the same content. Handwritten margin notes and doodles get written in by a little pencil as you scroll. Default on phones and for `prefers-reduced-motion`, which also skips the writing animation.
 
 Switch with the toggle in the top right, or link straight to one with `?mode=2d` / `?mode=3d`. The choice is remembered.

@@ -1,92 +1,37 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
-import { createTextTexture} from './textures.js';
+import { createCardTexture } from './textures.js';
 
 // === PORTFOLIO ITEMS ===
+// Index cards tossed on the desk. Angles are loose on purpose but all
+// stay close enough to the camera's "up" that the titles read.
+const THICKNESS = 0.12;
+
+const CARDS = [
+    { id: 'about',      number: '01', title: 'about',    note: 'who, what, why',   position: [-0.6, 5.2],  rotation: -0.22 },
+    { id: 'experience', number: '02', title: 'work',     note: "where i've been",  position: [6.4, 2.6],   rotation: -0.68 },
+    { id: 'projects',   number: '03', title: 'projects', note: 'things i made',    position: [4.2, -4.6],  rotation: -0.36 },
+    { id: 'contact',    number: '04', title: 'say hi',   note: 'inbox is open',    position: [-4.8, -3.6], rotation: -0.55 },
+];
+
 export function createPortfolioItems() {
-    const portfolioItems = [];
-    const itemGeometry = new THREE.BoxGeometry(4, 0.8, 6); // Thicker items
+    const geometry = new THREE.BoxGeometry(4, THICKNESS, 6);
+    const edge = new THREE.MeshStandardMaterial({ color: 0xe9e4d8, roughness: 0.95 });
 
-    // About Me Item
-    const aboutTexture = createTextTexture('About Me', 512, 768);
-    const aboutMaterial = new THREE.MeshStandardMaterial({ 
-        map: aboutTexture, 
-        roughness: 0.05, 
-        metalness: 0.9,
-        transparent: true,
-        opacity: 0.98,
-        envMapIntensity: 1.2
+    return CARDS.map(card => {
+        const face = new THREE.MeshStandardMaterial({
+            map: createCardTexture(card),
+            roughness: 0.92,
+            metalness: 0,
+        });
+        // BoxGeometry face order: +x, -x, +y (top), -y, +z, -z
+        const mesh = new THREE.Mesh(geometry, [edge, edge, face, edge, edge, edge]);
+        mesh.position.set(card.position[0], THICKNESS / 2, card.position[1]);
+        mesh.rotation.y = card.rotation;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.userData = { id: card.id, originalY: THICKNESS / 2 };
+        scene.add(mesh);
+        return mesh;
     });
-    const aboutItem = new THREE.Mesh(itemGeometry, aboutMaterial);
-    aboutItem.position.set(0, 0.4, 6);
-    aboutItem.rotation.x = 0;
-    aboutItem.rotation.y = 1;
-    aboutItem.rotation.z = 0;
-    aboutItem.castShadow = true;
-    aboutItem.userData = { id: 'about', originalY: 0.4 };
-    scene.add(aboutItem);
-    portfolioItems.push(aboutItem);
-
-    // Projects Item
-    const projectsTexture = createTextTexture('Projects', 512, 768);
-    const projectsMaterial = new THREE.MeshStandardMaterial({ 
-        map: projectsTexture, 
-        roughness: 0.05, 
-        metalness: 0.9,
-        transparent: true,
-        opacity: 0.98,
-        envMapIntensity: 1.2
-    });
-    const projectsItem = new THREE.Mesh(itemGeometry, projectsMaterial);
-    projectsItem.position.set(6/Math.sqrt(2), 0.4, -6/Math.sqrt(2));
-    projectsItem.rotation.x = 0;
-    projectsItem.rotation.y = 1.5;
-    projectsItem.rotation.z = 0;
-    projectsItem.castShadow = true;
-    projectsItem.userData = { id: 'projects', originalY: 0.4 };
-    scene.add(projectsItem);
-    portfolioItems.push(projectsItem);
-
-    // Contact Item
-    const contactTexture = createTextTexture('Contact', 512, 768);
-    const contactMaterial = new THREE.MeshStandardMaterial({ 
-        map: contactTexture, 
-        roughness: 0.05, 
-        metalness: 0.9,
-        transparent: true,
-        opacity: 0.98,
-        envMapIntensity: 1.2
-    });
-    const contactItem = new THREE.Mesh(itemGeometry, contactMaterial);
-    contactItem.position.set(-6/Math.sqrt(2), 0.4, -6/Math.sqrt(2));
-    contactItem.rotation.x = 0;
-    contactItem.rotation.y = 0.5;
-    contactItem.rotation.z = 0;
-    contactItem.castShadow = true;
-    contactItem.userData = { id: 'contact', originalY: 0.4 };
-    scene.add(contactItem);
-    portfolioItems.push(contactItem);
-
-    // Exp Item
-    const expTexture = createTextTexture('Experiences', 512, 768);
-    const expMaterial = new THREE.MeshStandardMaterial({ 
-        map: expTexture, 
-        roughness: 0.05, 
-        metalness: 0.9,
-        transparent: true,
-        opacity: 0.98,
-        envMapIntensity: 1.2
-    });
-    const expItem = new THREE.Mesh(itemGeometry, expMaterial);
-    expItem.position.set(9/Math.sqrt(2), 0.4, 2/Math.sqrt(2)+1);
-    expItem.rotation.x = 0;
-    expItem.rotation.y = 0.1;
-    expItem.rotation.z = 0;
-    expItem.castShadow = true;
-    expItem.userData = { id: 'experience', originalY: 0.4 };
-    scene.add(expItem);
-    portfolioItems.push(expItem);
-
-
-    return portfolioItems;
-} 
+}

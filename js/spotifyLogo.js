@@ -16,8 +16,8 @@ export class SpotifyLogo {
     }
 
     createPencilDrawnSpotifyLogo() {
-        const logoRadius = 2.9;
-        const center = { x: -12, z: 5 };
+        const logoRadius = 2.6;
+        const center = { x: -7.5, z: -10.5 };
         
         // Create invisible collision mesh for better interaction
         this.createCollisionMesh(center, logoRadius);
@@ -52,8 +52,8 @@ export class SpotifyLogo {
     }
 
     createSketchyCircle(center, radius) {
-        const pencilColor = 0x2d3748; // Dark pencil gray
-        const lineWidth = 0.08;
+        const pencilColor = 0x34322e; // Graphite
+        const lineWidth = 0.045;
         
         // Create multiple slightly offset circles for sketchy effect
         for (let i = 0; i < 4; i++) {
@@ -100,8 +100,8 @@ export class SpotifyLogo {
     }
 
     createSketchySoundWaves(center, radius) {
-        const pencilColor = 0x2d3748;
-        const lineWidth = 0.12;
+        const pencilColor = 0x34322e;
+        const lineWidth = 0.075;
         
         // Hand-drawn wave configurations
         const waves = [
@@ -186,7 +186,7 @@ export class SpotifyLogo {
     }
 
     addPencilShading(center, radius) {
-        const shadingColor = 0x4a5568; // Light pencil gray
+        const shadingColor = 0x6b675e; // Light pencil gray
         const lineWidth = 0.03;
         
         // Add cross-hatching for shading effect

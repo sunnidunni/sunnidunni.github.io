@@ -1,105 +1,37 @@
-# 3D Portfolio Website - Modular Structure
+# derek sun
 
-This 3D portfolio website is built with Three.js and organized into modular, maintainable JavaScript files.
+Personal site. Two ways to see it:
 
-## 📁 File Structure
+- **3d** — a desk. Index cards for each section, a pencil that follows the cursor (right-click to doodle), a sketched Spotify logo, and a cat named Taozi who doesn't want to be caught.
+- **2d** — a single clean page with the same content. Default on phones and for `prefers-reduced-motion`.
+
+Switch with the toggle in the top right, or link straight to one with `?mode=2d` / `?mode=3d`. The choice is remembered.
+
+## How it's put together
+
+The 2D page in `index.html` is the source of truth for all content. In 3D, clicking a card clones the matching `<section data-sheet="…">` into a slide-in sheet, so copy only ever lives in one place.
 
 ```
+index.html          content (2d page) + hud, sheet, loading shell
+styles.css          tokens (light + dark), 2d page, hud, sheet
 js/
-├── main.js           # Main application entry point
-├── scene.js          # Three.js scene, camera, and renderer setup
-├── lighting.js       # Lighting configuration and setup
-├── floor.js          # Floor and environment setup
-├── particles.js      # Particle system and animations
-├── textures.js       # Text texture creation and styling
-├── portfolioItems.js # Portfolio items creation and management
-├── controls.js       # Camera controls and distance-based resistance
-├── interaction.js    # Mouse interactions, raycasting, and modals
-└── loading.js        # Loading screen functionality
+├── ui.js           mode switching, sheet, music player — no three.js
+├── main.js         3d app + render loop (loaded only when 3d is shown, paused in 2d)
+├── scene.js        renderer, camera, paper background + fog
+├── lighting.js     soft daylight
+├── floor.js        ruled-paper floor
+├── textures.js     index-card faces
+├── portfolioItems.js  the cards
+├── interaction.js  hover / click on cards, spotify, cat
+├── controls.js     pan-only camera
+├── particles.js    dust
+├── pencil.js       cursor pencil + doodling
+├── spotifyLogo.js  sketched logo
+└── dog.js          the cat (historical filename)
 ```
 
-## How It Works
+## Editing
 
-### **main.js** - Application Entry Point
-- Initializes the `PortfolioApp` class
-- Orchestrates all component setup
-- Manages the main animation loop
-
-### **scene.js** - Core Three.js Setup
-- Creates the main scene, camera, and renderer
-- Sets up white background and fog
-- Handles window resize events
-
-### **lighting.js** - Professional Lighting
-- 3-point lighting system (key, fill, rim)
-- High-quality shadows with optimized settings
-- Creates depth and atmosphere
-
-### **floor.js** - Environment
-- Infinite white floor
-- Clean, minimal aesthetic
-- Receives shadows for realism
-
-### **particles.js** - Atmospheric Effects
-- Subtle floating particles
-- Configurable particle count and behavior
-- Animation functions
-
-### **textures.js** - Visual Design
-- Modern glassmorphism backgrounds
-- Gradient borders and accent elements
-- Professional typography and styling
-
-### **portfolioItems.js** - Content Management
-- Creates portfolio cards with different orientations
-- Handles materials and positioning
-- Adds shadow effects for grounding
-
-### **controls.js** - Camera Movement
-- OrbitControls with custom damping
-- Distance-based drag resistance
-- Real-time distance indicator updates
-
-### **interaction.js** - User Experience
-- Mouse hover effects and click detection
-- Raycasting for 3D object selection
-- Modal system management
-
-### **loading.js** - Loading States
-- Loading screen functionality
-- Smooth fade-out transitions
-
-## Benefits of This Structure
-
-1. **Maintainability** - Each file has a single responsibility
-2. **Readability** - Easy to find and modify specific features
-3. **Reusability** - Components can be easily reused or modified
-4. **Debugging** - Issues can be isolated to specific modules
-5. **Collaboration** - Multiple developers can work on different modules
-6. **Testing** - Individual modules can be tested separately
-
-## Key Features
-
-- **3D Portfolio Cards** - Thick, modern design with different orientations
-- **Infinite White Floor** - Clean, gallery-like environment
-- **Distance-Based Navigation** - Drag resistance increases with distance
-- **Interactive Elements** - Hover effects and click-to-open modals
-- **Professional Lighting** - High-quality shadows and atmosphere
-- **Responsive Design** - Adapts to different screen sizes
-
-## Getting Started
-
-1. Ensure all files are in the `js/` directory
-2. The main entry point is `main.js`
-3. All modules are automatically imported and initialized
-4. The application starts when the DOM is loaded
-
-## Adding New Features
-
-To add new features:
-1. Create a new module file (e.g., `newFeature.js`)
-2. Export the necessary functions
-3. Import and use in `main.js`
-4. Follow the existing naming conventions
-
-This modular structure makes the codebase much more professional and easier to maintain! 
+- **Content**: edit the sections in `index.html`. Both modes update.
+- **Songs**: add or swap `<button data-track="SPOTIFY_TRACK_ID">` entries in the `#listening` section. One is picked at random on each visit.
+- **Card labels on the desk**: `CARDS` in `js/portfolioItems.js`.

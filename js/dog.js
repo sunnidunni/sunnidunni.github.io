@@ -102,9 +102,12 @@ export class WanderingDog {
     
         this.collisionWhiskers.forEach(whisker => {
             const whiskerDirection = whisker.clone().applyQuaternion(this.dog.quaternion).normalize();
-            this.raycaster.set(this.dog.position, whiskerDirection);
+            // Cast just above the floor so the ray isn't coplanar with it, but low enough to hit cards
+            const origin = this.dog.position.clone();
+            origin.y = 0.06;
+            this.raycaster.set(origin, whiskerDirection);
     
-            const checkableObjects = this.scene.children.filter(obj => obj !== this.dog);
+            const checkableObjects = this.scene.children.filter(obj => obj !== this.dog && !obj.isPoints);
             const intersects = this.raycaster.intersectObjects(checkableObjects, true);
     
             if (intersects.length > 0 && intersects[0].distance < this.collisionDistance) {
@@ -119,31 +122,23 @@ export class WanderingDog {
         return new THREE.Vector3(); // No steering away
     }
     jumpOver() {
-    if (this.isJumping) return; // Avoid double jumps
-    this.isJumping = true;
+        if (this.isJumping) return; // Avoid double jumps
+        this.isJumping = true;
+        this.jumpStart = performance.now();
+        this.jumpBaseY = this.dog.position.y;
+    }
 
-    const jumpHeight = 1; // meters
-    const jumpDuration = 300; // ms
-    const originalY = this.dog.position.y;
-
-    // Up
-    new TWEEN.Tween(this.dog.position)
-        .to({ y: originalY + jumpHeight }, jumpDuration / 2)
-        .easing(TWEEN.Easing.Quadratic.Out)
-        .onComplete(() => {
-            // Down
-            new TWEEN.Tween(this.dog.position)
-                .to({ y: originalY }, jumpDuration / 2)
-                .easing(TWEEN.Easing.Quadratic.In)
-                .onComplete(() => {
-                    this.isJumping = false;
-                })
-                .start();
-        })
-        .start();
-}
-
-
+    // A quick hop: 1 unit up and back down over 300ms
+    updateJump() {
+        if (!this.isJumping) return;
+        const t = (performance.now() - this.jumpStart) / 300;
+        if (t >= 1) {
+            this.dog.position.y = this.jumpBaseY;
+            this.isJumping = false;
+            return;
+        }
+        this.dog.position.y = this.jumpBaseY + Math.sin(Math.PI * t) * 1;
+    }
 
     update() {
         const deltaTime = this.clock.getDelta();
@@ -151,6 +146,7 @@ export class WanderingDog {
 
         // Update animations (tail, legs, idle)
         this.updateAnimations();
+        this.updateJump();
         
         
         // Always track the cursor's world position

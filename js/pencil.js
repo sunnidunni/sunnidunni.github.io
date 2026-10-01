@@ -139,6 +139,9 @@ export class PencilCursor {
             }
         });
 
+        // Right-click draws, so keep the browser menu out of the way
+        canvas.addEventListener('contextmenu', (event) => event.preventDefault());
+
         canvas.addEventListener('mouseup', () => {
             this.stopDrawing();
         });

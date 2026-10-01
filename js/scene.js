@@ -2,23 +2,22 @@ import * as THREE from 'three';
 
 // === SCENE SETUP ===
 export const scene = new THREE.Scene();
-export const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+export const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 export const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
-    antialias: false, // Disable anti-aliasing for retro pixel look
+    antialias: true,
 });
 
 // Configure renderer
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Set scene background to color theory-based dark blue
-scene.background = new THREE.Color(0x0f172a); // Deep slate blue that complements the floor
-
-// Remove fog for authentic retro look
-// scene.fog = new THREE.Fog(0x87ceeb, 50, 200);
+// Paper all the way to the horizon: background and fog match the floor
+export const PAPER = 0xf4f1ea;
+scene.background = new THREE.Color(PAPER);
+scene.fog = new THREE.Fog(PAPER, 28, 70);
 
 // Set camera position to look at the scene from an angle
 camera.position.set(-5, 8, 10);

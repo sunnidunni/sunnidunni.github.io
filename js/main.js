@@ -5,8 +5,8 @@ import { setupFloor } from './floor.js';
 import { setupParticles, animateParticles } from './particles.js';
 import { createPortfolioItems } from './portfolioItems.js';
 import { setupControls } from './controls.js';
-import { setupInteraction, setupModals } from './interaction.js';
-import { hideLoadingScreen } from './loading.js';
+import { setupInteraction, animateCards } from './interaction.js';
+import { sceneReady } from './ui.js';
 import { setupPencilCursor } from './pencil.js';
 import { createSpotifyLogo } from './spotifyLogo.js';
 import { setupWanderingDog } from './dog.js';
@@ -21,6 +21,7 @@ class PortfolioApp {
         this.spotifyLogo = null;
         this.pencilCursor = null;
         this.wanderingDog = null;
+        this.running = false;
 
         this.init();
     }
@@ -54,29 +55,37 @@ class PortfolioApp {
             console.log('Setting up interaction...');
             setupInteraction(this.portfolioItems, this.spotifyLogo, this.wanderingDog);
             
-            console.log('Setting up modals...');
-            setupModals();
-
             console.log('Setting up pencil cursor...');
             this.pencilCursor = setupPencilCursor(scene, camera, renderer);
 
             console.log('Starting animation loop...');
-            // Start animation loop
-            this.animate();
+            // Pause rendering while the 2D page is showing, pick back up on return
+            document.addEventListener('modechange', () => this.start());
+            this.start();
             
         } catch (error) {
             console.error('Error initializing Portfolio App:', error);
         }
     }
 
+    start() {
+        if (this.running || document.documentElement.dataset.mode !== '3d') return;
+        this.running = true;
+        this.animate();
+    }
+
     animate() {
+        if (document.documentElement.dataset.mode !== '3d') {
+            this.running = false;
+            return;
+        }
         requestAnimationFrame(() => this.animate());
         this.frameCount++;
 
         try {
             // Hide loading screen after a few frames
             if (this.frameCount === 10) {
-                hideLoadingScreen();
+                sceneReady();
             }
 
             // Animate particles
@@ -93,6 +102,9 @@ class PortfolioApp {
             if (this.wanderingDog) {
                 this.wanderingDog.update();
             }
+
+            // Ease cards in and out of hover
+            animateCards(this.portfolioItems);
 
             // Animate floating decorative elements
             this.animateFloatingElements();
@@ -146,24 +158,5 @@ class PortfolioApp {
     }
 }
 
-// Initialize the application when the page loads
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, creating Portfolio App...');
-    try {
-        new PortfolioApp();
-    } catch (error) {
-        console.error('Error creating Portfolio App:', error);
-    }
-});
-
-// // Also try to initialize if DOM is already loaded
-// if (document.readyState === 'loading') {
-//     console.log('DOM still loading...');
-// } else {
-//     console.log('DOM already loaded, creating Portfolio App immediately...');
-//     try {
-//         new PortfolioApp();
-//     } catch (error) {
-//         console.error('Error creating Portfolio App:', error);
-//     }
-// }
+// ui.js imports this module only once 3D mode is chosen, so start right away
+new PortfolioApp();

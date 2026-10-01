@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-mode="2d">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derek's portfolio</title>
-    
-    <!-- Link to Tailwind CSS (CDN) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Link to your custom stylesheet -->
-    <link rel="stylesheet" href="styles.css">
-    
-    <!-- Link to Google Fonts -->
+    <title>Derek Sun</title>
+    <meta name="description" content="Derek Sun — data science at Berkeley, most recently at Google. ML, distributed systems, and side projects.">
+    <meta name="theme-color" content="#f4f1ea">
+
+    <!-- Pick the mode before first paint so there's no flash -->
+    <script>
+        (function () {
+            var q = new URLSearchParams(location.search).get('mode');
+            var saved = null;
+            try { saved = localStorage.getItem('mode'); } catch (e) {}
+            var touch = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
+            var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var mode = q || saved || (touch || calm ? '2d' : '3d');
+            document.documentElement.dataset.mode = mode === '3d' ? '3d' : '2d';
+        })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    
-    <!-- Three.js Import Map -->
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
     <script type="importmap">
         {
             "imports": {
@@ -27,247 +34,174 @@
         }
     </script>
 </head>
-<body class="bg-gray-900">
+<body>
 
-    <!-- The container for the 3D scene -->
-    <canvas id="bg"></canvas>
+    <!-- ============ 3D: the desk ============ -->
+    <canvas id="bg" aria-hidden="true"></canvas>
 
-    <!-- Loading indicator -->
-    <div id="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p class="text-white text-lg">Welcome to Derek's playground...</p>
+    <div id="loading" aria-hidden="true">
+        <p class="loading-name">derek sun</p>
+        <p class="loading-sub">clearing off the desk<span class="dots"></span></p>
+    </div>
+
+    <header class="hud">
+        <a class="wordmark" href="#top" data-sheet-link="about">derek sun</a>
+        <div class="mode-toggle" role="group" aria-label="View mode">
+            <button type="button" data-set-mode="3d">3d</button>
+            <button type="button" data-set-mode="2d">2d</button>
         </div>
+    </header>
+
+    <p class="hint">drag to wander &nbsp;·&nbsp; right-click to doodle &nbsp;·&nbsp; there's a cat around here somewhere</p>
+
+    <!-- Slide-in sheet; filled from the sections below when something on the desk is clicked -->
+    <div id="sheet" class="sheet" aria-hidden="true">
+        <div class="sheet-scrim" data-close></div>
+        <aside class="sheet-panel" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">
+            <button type="button" class="sheet-close" data-close aria-label="Close">esc</button>
+            <div class="sheet-body"></div>
+        </aside>
     </div>
 
-    <!-- Instructions overlay -->
-    <div class="fixed top-4 left-4 z-40 bg-black bg-opacity-50 text-white p-4 rounded-lg backdrop-blur-sm">
-        <p class="text-sm">🖱️ Click on portfolio items to explore</p>
-        <p class="text-sm">🖱️ Right Click to draw</p>
-        <p class="text-sm">🖱️ Maybe try catching my cat?</p>
-    </div>
+    <!-- ============ 2D: the page (also the source of truth for the sheets) ============ -->
+    <main id="flat" class="flat">
 
-    <!-- Modals for portfolio sections -->
-    <div id="aboutModal" class="modal">
-        <div class="modal-content bg-white rounded-lg shadow-2xl">
-            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">About Me</h2>
-            <div class="space-y-4">
-                <p class="modal-body">Hello! I'm Derek, a current sophomore at UC Berkeley studying data science. I love ML, distributed systems, and building useful things. Hope you have fun on my website!</p>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-gray-800 mb-2">Skills & Technologies</h3>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">JavaScript</span>
-                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Python</span>
-                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">React</span>
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Node.js</span>
-                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Java</span>
-                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">C/C++</span>
-                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">MySQL</span>
-                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Pytorch</span>
-                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Springboot</span>
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">Redis</span>
-                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">MongoDB</span>
-                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">Scikit-learn</span>
+        <section id="about" class="intro" data-sheet="about">
+            <h1 class="name">derek sun</h1>
+            <p class="lede">
+                data science at berkeley. most recently, a summer at google.
+                i like ml, distributed systems, and building things that are useful&nbsp;&mdash; or at least fun.
+            </p>
+            <p class="aside">
+                off the clock: basketball, the gym, and a frankly unreasonable amount of reels.
+            </p>
+            <p class="stack">
+                <span class="label">usually reaching for</span>
+                python, pytorch, scikit-learn, java, spring boot, c/c++, javascript, react, node, mysql, redis, mongodb, kafka, aws
+            </p>
+        </section>
+
+        <section id="work" data-sheet="experience">
+            <h2 class="label">work</h2>
+            <ol class="rows">
+                <li class="row">
+                    <span class="when">2026</span>
+                    <div class="what">
+                        <p class="title">google <span class="role">software engineering intern</span></p>
+                        <p class="desc">spent the summer shipping at google. ask me about it.</p>
                     </div>
-                </div>
-                
-                <p class="modal-body">When I'm not coding, you can find me playing basketball, at the gym, or doom scrolling reels.</p>
+                </li>
+                <li class="row">
+                    <span class="when">2025</span>
+                    <div class="what">
+                        <p class="title">citris &amp; the banatao institute <span class="role">swe intern</span></p>
+                        <p class="desc">built a mobile app connecting startup founders with students, with gifted coaching.</p>
+                    </div>
+                </li>
+                <li class="row">
+                    <span class="when">2025</span>
+                    <div class="what">
+                        <p class="title">athena ai <span class="role">swe intern</span></p>
+                        <p class="desc">journal history module and thread persistence.</p>
+                    </div>
+                </li>
+                <li class="row">
+                    <span class="when">2024</span>
+                    <div class="what">
+                        <p class="title">quotr <span class="role">ml intern</span></p>
+                        <p class="desc">automatic floor-plan segmentation and document retrieval.</p>
+                    </div>
+                </li>
+                <li class="row">
+                    <span class="when">2024</span>
+                    <div class="what">
+                        <p class="title">oscr ai <span class="role">swe intern</span></p>
+                        <p class="desc">ai tooling for scraping, transcription, translation, video summaries, and linkedin analytics.</p>
+                    </div>
+                </li>
+                <li class="row">
+                    <span class="when">2022</span>
+                    <div class="what">
+                        <p class="title">aurora system <span class="role">swe intern</span></p>
+                        <p class="desc">a pyqt5 installer, 100+ tests, and a rebuilt error-logging system.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section id="projects" data-sheet="projects">
+            <h2 class="label">projects</h2>
+            <ol class="rows">
+                <li class="row">
+                    <span class="when">01</span>
+                    <div class="what">
+                        <p class="title"><a href="https://github.com/sunnidunni/intellicrawl" target="_blank" rel="noopener">intellicrawl <span class="arrow">↗</span></a></p>
+                        <p class="desc">point it at a site, ask a question, get structured json back. flask, hugging face qa models, semantic search.</p>
+                    </div>
+                </li>
+                <li class="row">
+                    <span class="when">02</span>
+                    <div class="what">
+                        <p class="title"><a href="https://medium.com/@derek2024389/how-data-tells-the-story-of-nba-rookies-roles-on-the-court-131f3ff68b0" target="_blank" rel="noopener">nba rookie roles <span class="arrow">↗</span></a></p>
+                        <p class="desc">re-sorted nba rookies into six roles that describe what they actually do. k-means over t-sne, pca, and umap.</p>
+                    </div>
+                </li>
+                <li class="row">
+                    <span class="when">03</span>
+                    <div class="what">
+                        <p class="title"><a href="https://github.com/sunnidunni/gameshop" target="_blank" rel="noopener">gameshop <span class="arrow">↗</span></a></p>
+                        <p class="desc">a place for my friends' games that happens to hold 9k concurrent users at 5k+ tps, p99 under a second. spring boot, react, kafka, aws.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section id="listening" data-sheet="music">
+            <h2 class="label">on rotation</h2>
+            <div class="player" data-player>
+                <iframe class="player-embed" title="Spotify player" src="about:blank" width="100%" height="152" frameborder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <ol class="tracks">
+                    <li><button type="button" data-track="3xKsf9qdS1CyvXSMEid6g8"><span class="t">pink + white</span><span class="a">frank ocean</span></button></li>
+                    <li><button type="button" data-track="3EaJDYHA0KnX88JvDhL9oa"><span class="t">dark red</span><span class="a">steve lacy</span></button></li>
+                    <li><button type="button" data-track="7zFXmv6vqI4qOt4yGf3jYZ"><span class="t">get you</span><span class="a">daniel caesar, kali uchis</span></button></li>
+                    <li><button type="button" data-track="1MJ5f5EYBC92ADD6xcz7nb"><span class="t">chamber of reflection</span><span class="a">mac demarco</span></button></li>
+                    <li><button type="button" data-track="6K4t31amVTZDgR3sKmwUJJ"><span class="t">the less i know the better</span><span class="a">tame impala</span></button></li>
+                    <li><button type="button" data-track="5GUYJTQap5F3RDQiCOJhrS"><span class="t">self control</span><span class="a">frank ocean</span></button></li>
+                    <li><button type="button" data-track="3OXHwY8gI2QUh0QliXBwrI"><span class="t">愛，很簡單</span><span class="a">david tao</span></button></li>
+                </ol>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div id="projectsModal" class="modal">
-        <div class="modal-content bg-white rounded-lg shadow-2xl">
-            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Projects</h2>
-            <div class="space-y-6">
-                <a href="https://github.com/sunnidunni/intellicrawl" target="_blank" class="rounded-lg p-2 transition-colors">
-                    <div class="border-l-4 border-blue-500 pl-4">
-                        <h3 class="text-xl font-semibold text-yellow-600 mb-2">Intellicrawl</h3>
-                        <p class="modal-body mb-2">Developed a full-stack web application with Flask serving a Rest API and HTML as the frontend. Used question-answering models with semantic search to recursively crawl a webpage and dynamically extract
-                            relevant sections in structured json format based on a user-specified prompt.</p>
-                        <div class="flex gap-2">
-                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Python</span>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Flask</span>
-                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Selenium</span>
-                            <span class="px-2 py-1 bg-blue-100 text-yellow-800 rounded text-xs">Transformers (Huggingface)</span>
-                        </div>
-                    </div>
-                </a>
-                
-                <a href="https://medium.com/@derek2024389/how-data-tells-the-story-of-nba-rookies-roles-on-the-court-131f3ff68b0" target="_blank" class="rounded-lg p-2 transition-colors">
-                    <div class="border-l-4 border-green-500 pl-4">
-                        <h3 class="text-xl font-semibold text-yellow-700 mb-2">Redefining Roles of NBA Rookies</h3>
-                        <p class="modal-body mb-2">Created an unsupervised model to redefine NBA rookie roles to 6 new and more accurate ones based on on-court
-                            statistics using K-Means clustering and 3 dimensional reduction methods (T-Sne, PCA, U-map).</p>
-                        <div class="flex gap-2">
-                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Python</span>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Scikit-learn</span>
-                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Matplotlib</span>
-                            <span class="px-2 py-1 bg-purple-100 text-red-800 rounded text-xs">Numpy</span>
-                        </div>
-                    </div>
-                </a>
-                
-                <a href="https://github.com/sunnidunni/gameshop" target="_blank" class="rounded-lg p-2 transition-colors">
-                    <div class="border-l-4 border-purple-500 pl-4">
-                        <h3 class="text-xl font-semibold text-yellow-800 mb-2">High-Performance Gaming Platform</h3>
-                        <p class="modal-body mb-2">A high performance gaming platform to hold me and my friends' games. Able to serve 9,000 concurrent users with 5,000+
-                            TPS and sub-1 second P99 latency.</p>
-                        <div class="flex gap-2">
-                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Springboot</span>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">React</span>
-                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">AWS</span>
-                            <span class="px-2 py-1 bg-blue-100 text-yellow-800 rounded text-xs">Kafka</span>
-                            <span class="px-2 py-1 bg-green-100 text-brown-800 rounded text-xs">Jenkins</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
+        <section id="contact" data-sheet="contact">
+            <h2 class="label">say hi</h2>
+            <p class="lede small">inbox is open. good ideas, bad ideas, pickup games.</p>
+            <ul class="links">
+                <li><a href="mailto:dereksun@berkeley.edu">email</a></li>
+                <li><a href="https://linkedin.com/in/dereksun5" target="_blank" rel="noopener">linkedin</a></li>
+                <li><a href="https://github.com/sunnidunni" target="_blank" rel="noopener">github</a></li>
+                <li><a href="https://instagram.com/derk_sun/" target="_blank" rel="noopener">instagram</a></li>
+            </ul>
+        </section>
 
-    <div id="contactModal" class="modal">
-        <div class="modal-content bg-white rounded-lg shadow-2xl">
-            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">Contact Me</h2>
-            <div class="space-y-6">
-                <p class="modal-body">I'm always excited to connect!</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">Email</h3>
-                        <a href="dereksun@berkeley.edu" class="text-blue-600 hover:text-blue-800">dereksun@berkeley.edu</a>
-                    </div>
-                    
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">LinkedIn</h3>
-                        <a href="https://linkedin.com/in/dereksun5" target="_blank" class="text-blue-600 hover:text-blue-800">linkedin.com/in/dereksun5</a>
-                    </div>
-                    
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">GitHub</h3>
-                        <a href="https://github.com/sunnidunni" target="_blank" class="text-blue-600 hover:text-blue-800">github.com/sunnidunni</a>
-                    </div>
-                    
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-800 mb-2">Instagram</h3>
-                        <a href="https://instagram.com/derk_sun/" target="_blank" class="text-blue-600 hover:text-blue-800">instagram.com/derk_sun/</a>
-                    </div>
-                </div>
-                
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-blue-800 mb-2">Hit me up!</h3>
-                    <p class="text-blue-900 text-sm">I'm open to any interesting projects, feel free to reach out!</p>
-                </div>
-            </div>
-        </div>
-    </div>
+        <footer class="foot">
+            <span>© 2026</span>
+            <button type="button" class="quiet" data-sheet-link="cat">taozi says hi</button>
+            <button type="button" class="quiet" data-set-mode="3d">try the 3d version →</button>
+        </footer>
+    </main>
 
-    <div id="catModal" class="modal">
-        <div class="modal-content bg-white rounded-lg shadow-2xl">
-            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">Whos this?</h2>
-            <div class="space-y-6">
-                <p class="modal-body">You caught Taozi</p>
-                
-                <div class="bg-orange-50 p-4 rounded-lg flex justify-center items-center">
-                    <!-- <h3 class="font-semibold text-orange-800 mb-4">Cats vs Dogs</h3>
-                    <div style="text-align: center; font-size: 48px; margin: 20px 0;">
-                        🐱 🐶 🐱
-                    </div> -->
-                    <video width="480" height="360" autoplay muted loop>
-                        <source src="assets/cat1.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                      </video>
-                </div>
-                
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-blue-800 mb-2">🐈</h3>
-                    <p class="text-blue-900 text-sm">Rate Taozi aura 1-10</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Only reachable by catching the cat (or the footer) -->
+    <template id="sheet-cat">
+        <section data-sheet="cat">
+            <h2 class="label">you caught taozi</h2>
+            <video class="cat" autoplay muted loop playsinline>
+                <source src="assets/cat1.mp4" type="video/mp4">
+            </video>
+            <p class="desc">rate the aura, 1–10.</p>
+        </section>
+    </template>
 
-    <div id="experienceModal" class="modal">
-        <div class="modal-content bg-white rounded-lg shadow-2xl">
-            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Past Experiences</h2>
-            <div class="space-y-6">
-                <div class="border-l-4 border-blue-500 pl-4">
-                    <h3 class="text-xl font-semibold text-blue-600 mb-2">Software Engineer Intern</h3>
-                    <p class="text-gray-700 font-medium mb-1">CITRIS and the Banatao Institute</p>
-                    <p class="text-gray-600 text-sm mb-2">Jun 2025 - Aug 2025 · 3 mos | San Francisco Bay Area · Hybrid</p>
-                    <p class="modal-body mb-2">(Working with Gifted Coaching) Developed a mobile app to connect startup founders with students</p>
-                </div>
-                
-                <div class="border-l-4 border-green-500 pl-4">
-                    <h3 class="text-xl font-semibold text-green-600 mb-2">Software Engineer Intern</h3>
-                    <p class="text-gray-700 font-medium mb-1">Athena AI Life Advisor</p>
-                    <p class="text-gray-600 text-sm mb-2">Feb 2025 - May 2025 · 4 mos | Berkeley, California</p>
-                    <p class="modal-body mb-2">Engineered the journal history module and implemented thread persistence</p>
-                </div>
-                
-                <div class="border-l-4 border-purple-500 pl-4">
-                    <h3 class="text-xl font-semibold text-purple-600 mb-2">Machine Learning Intern</h3>
-                    <p class="text-gray-700 font-medium mb-1">Quotr</p>
-                    <p class="text-gray-600 text-sm mb-2">Dec 2024 - Feb 2025 · 3 mos | Berkeley, California · Hybrid</p>
-                    <p class="modal-body mb-2">Developed automatic floor plan segmentation and document retrieval features</p>
-                </div>
-                
-                <div class="border-l-4 border-red-500 pl-4">
-                    <h3 class="text-xl font-semibold text-red-600 mb-2">Software Engineer Intern</h3>
-                    <p class="text-gray-700 font-medium mb-1">OSCR AI</p>
-                    <p class="text-gray-600 text-sm mb-2">Jun 2024 - Dec 2024 · 7 mos | Los Angeles, California · Remote</p>
-                    <p class="modal-body mb-2">Engineered AI-powered web scraping, transcription, translation, video summarization, and LinkedIn analytics tools that improved usability and boosted user engagement.</p>
-                    </div>
-                </div>
-                
-                <div class="border-l-4 border-yellow-500 pl-4">
-                    <h3 class="text-xl font-semibold text-yellow-600 mb-2">Software Engineer Intern</h3>
-                    <p class="text-gray-700 font-medium mb-1">Aurora System Inc.</p>
-                    <p class="text-gray-600 text-sm mb-2">Jul 2022 - Jul 2023 · 1 yr 1 mo | Cupertino, California · Remote</p>
-                    <p class="modal-body mb-2">Built a PyQt5-based installer UI, developed 100+ tests with bug fixes, and redesigned the error logging system to drive installations, ensure reliability, and improve tracking efficiency.</p>
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="musicModal" class="modal">
-        <div class="modal-content bg-white rounded-lg shadow-2xl">
-            <span class="close-button text-gray-500 hover:text-gray-800">&times;</span>
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">My Spotify playlist</h2>
-            <div class="space-y-6">
-                <p class="modal-body">What I've been listening to recently</p>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-gray-800 mb-4">David you my man</h3>
-                    <iframe data-testid="embed-iframe" 
-                            style="border-radius:12px" 
-                            src="https://open.spotify.com/embed/artist/40tNK2YedBV2jRFAHxpifB?utm_source=generator&theme=0" 
-                            width="100%" 
-                            height="152" 
-                            frameBorder="0" 
-                            allowfullscreen="" 
-                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                            loading="lazy">
-                    </iframe>
-                </div>
-                
-                <div class="bg-green-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-green-800 mb-2">🎧</h3>
-                    <p class="text-green-900 text-sm">Some music to make sure my website doesn't get too boring</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Link to your main JavaScript file -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/ui.js"></script>
 </body>
 </html>

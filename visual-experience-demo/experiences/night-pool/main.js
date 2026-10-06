@@ -13,7 +13,7 @@ const canvas = $('scene');
 const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, powerPreference: 'high-performance' });
 if (!gl) { document.body.append('This work needs WebGL 2.'); throw new Error('WebGL 2 unavailable'); }
 
-let W = 1, H = 1, raf = 0, last = 0, acc = 0, clock = 0, time = 0, tick = 0, live = false;
+let W = 1, H = 1, raf = 0, last = 0, acc = 0, clock = 0, lit = 0, time = 0, tick = 0, live = false;
 let pool = [0, 0], water = null, held = -1, hover = -1, nextDrop = .35, dim = 1, focus = 0, dripAt = 0; // the first print drops as the lamps come up
 const cam = {}, lamps = new Float32Array(6), bulbs = new Float32Array(NB * 3), rest = new Float32Array(NB * 3);
 const hands = new Map(), queue = [], drops = [];
@@ -256,7 +256,6 @@ function advance(dt) {
     }
     fastest = Math.max(fastest, stepPrints(prints, water, steps, pool, 1 / 120, reduced ? 0 : 1));
     clock += 1 / 120;
-    if (queue.length && clock >= nextDrop) { drop(queue.shift()); nextDrop = clock + .065; }
   }
   for (const [id, h] of hands) { h.ox = h.x; h.oz = h.z; h.vx *= Math.exp(-dt * 6); h.vz *= Math.exp(-dt * 6); if (h.up) hands.delete(id); }
   // lifting: a print rises toward you on a critically damped spring and falls back under gravity
@@ -276,7 +275,7 @@ function advance(dt) {
   focus = Math.min(1, Math.max(0, ...prints.map((p) => p.out ? p.lift : 0)));
   dim = 1 - .45 * focus;
   drip(dt);
-  return fastest > 1e-3 || water.motion > 1e-3 || lifting > 0 || queue.length > 0 || active.length > 0 || drops.length > 0;
+  return fastest > 1e-3 || water.motion > 1e-3 || lifting > 0 || queue.length > 0 || prints.some((p) => p.mode === 1) || active.length > 0 || drops.length > 0;
 }
 
 // a hand carries floating things at most about as fast as a hand can move through water
@@ -313,6 +312,21 @@ function drip(dt) {
   }
 }
 
+// The first run: the lamps strike and the prints drop in, one after another, falling under gravity
+// and landing with a splash. It keeps the pace of real time (seconds since the last frame, up to one),
+// so however slowly frames come, a few seconds after load the prints are in.
+function strike(real) {
+  const n = Math.ceil(real * 120 - 1e-6), dt = real / n;
+  for (let k = 0; k < n; k++) {
+    lit += dt;
+    if (queue.length && lit >= nextDrop) { drop(queue.shift()); nextDrop = lit + .065; }
+    for (const p of prints) {
+      if (p.mode !== 1) continue;
+      p.fall -= 4.2 * dt; p.y += p.fall * dt; p.a += p.w * dt;
+      if (p.y <= 0) { p.mode = 2; p.vy = p.fall * .25; p.w *= .3; water.dent(p.x, p.z, Math.min(p.hw, p.hh) * .75, -.01); }
+    }
+  }
+}
 function drop(p) {
   Object.assign(p, { mode: 1, y: .35 + rand() * .3, fall: -.5, w: (rand() - .5) * 1.4, sx: (rand() - .5) * .5, sz: (rand() - .5) * .5 });
   p.y0 = p.y;
@@ -417,7 +431,7 @@ function render() {
   const u = poolProgram.u;
   gl.useProgram(poolProgram.p);
   gl.uniform2f(u.uRes, W, H); gl.uniform2f(u.uTan, cam.tanX, cam.tanY); gl.uniform1f(u.uPix, 2 * cam.tanY / H);
-  gl.uniform1f(u.uOn, reduced ? 9 : clock); // the lamps strike as the work first runs
+  gl.uniform1f(u.uOn, reduced ? 9 : lit); // the lamps strike as the work first runs
   gl.uniform3fv(u.uF, cam.F); gl.uniform3fv(u.uR, cam.R); gl.uniform3fv(u.uU, cam.U);
   gl.bindVertexArray(screenVao);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -448,22 +462,28 @@ function drawPrints(from, n) {
 }
 
 // Off screen a frame only redraws; on screen the water moves on (always, unless reduced motion is
-// preferred, when the loop stops once everything has settled). A frame waits for the graphics card to
-// finish the last one, so a slow (software) card never falls behind; a fast one has always finished.
-let fence = null;
+// preferred, when the loop stops once everything has settled). A graphics card that takes longer than
+// a few frames to finish one (timed by a fence on the oldest frame it has not finished) is handed the
+// next only when it is done, so it is never buried; a quick card, or a driver that reports a finished
+// frame late, never waits. Nothing ever blocks: at worst a frame is put off to the next.
+let fence = null, sent = 0, lag = .2;
 function wake() { if (live && !raf) raf = requestAnimationFrame(frame); }
 function frame(now) {
   raf = 0;
-  if (fence) { if (gl.getSyncParameter(fence, gl.SYNC_STATUS) !== gl.SIGNALED) gl.finish(); gl.deleteSync(fence); fence = null; }
-  const dt = last ? Math.min((now - last) / 1000, .05) : 1 / 60;
   let moving = false;
   if (running()) {
+    if (fence && gl.getSyncParameter(fence, gl.SYNC_STATUS) === gl.SIGNALED) {
+      if (now - sent < 1000) lag += ((now - sent) / 1000 - lag) * .3; // (after a pause it says nothing)
+      gl.deleteSync(fence); fence = null;
+    }
+    if (fence && lag > .05 && now - sent < 4000) { wake(); return; }
+    const real = last ? (now - last) / 1000 : 1 / 60, dt = Math.min(real, .05);
     last = now;
-    if (!reduced) time += dt;
+    if (!reduced) { time += dt; strike(Math.min(real, 1)); }
     moving = advance(dt) || !reduced;
   }
   render();
-  fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+  if (!fence || now - sent >= 4000) { if (fence) gl.deleteSync(fence); fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); sent = now; }
   gl.flush();
   if (moving) wake(); else last = 0;
 }

@@ -56,7 +56,7 @@ export function createWater(px, pz) {
 }
 
 // Prints: centre x, z, turn a (local x runs along (cos a, sin a)), their rates vx, vz, w, half sizes hw, hh,
-// and bob y / tilt sx, sz that follow the water under them. mode 0: not yet in, 1: falling in, 2: afloat.
+// and bob y / tilt sx, sz that follow the water under them. mode 0: not yet in, 1: falling in (main.js), 2: afloat.
 const DRAG = .95, TURN = 1.3;   // the water's drag on gliding and turning, per second (settled in 2-3 s)
 const SLOPE = 5;                 // m/s² of slide per unit of water slope
 const GRIP = 12, REACH = .24;    // how fast a hand brings the water near it up to its own speed, and how far
@@ -120,11 +120,7 @@ export function stepPrints(prints, water, hands, [PX, PZ], dt, drift) {
   }
   // each print rides the water under it: a heavy, damped bob and tilt
   for (const p of prints) {
-    if (p.mode === 1) {
-      p.fall -= 4.2 * dt; p.y += p.fall * dt; p.a += p.w * dt;
-      if (p.y <= 0) { p.mode = 2; p.vy = p.fall * .25; p.w *= .3; water.dent(p.x, p.z, Math.min(p.hw, p.hh) * .75, -.01); }
-      fastest = Math.max(fastest, 1);
-    } else if (p.mode === 2 && !p.out) {
+    if (p.mode === 2 && !p.out) {
       const [gx, gz] = water.slope(p.x, p.z, Math.max(p.hw, p.hh) * .7);
       p.vy += (90 * (water.height(p.x, p.z) - p.y) - 11 * p.vy) * dt; p.y += p.vy * dt;
       p.tvx += (80 * (gx - p.sx) - 12 * p.tvx) * dt; p.sx += p.tvx * dt;

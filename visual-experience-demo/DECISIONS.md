@@ -143,3 +143,31 @@ Ideas I considered and dropped:
   constants in the code and the filmstrips, not by hand. The first thing worth doing is a pass on a
   real phone (Safari and Chrome), especially Night Pool's water shader and Bedsheet Cinema's cloth and
   haze, which are the heaviest.
+- **One fix I made by hand after the rounds:** Double Prints skipped any frame whose predecessor's
+  fence hadn't signalled. On a driver that reports late, that could halve the frame rate. I ported
+  Bedsheet Cinema's adaptive version and re-ran its full interaction script.
+
+## What I'd do next
+
+1. **Real phones first.** Tune the feel by hand on iOS Safari and Android Chrome: drag weight, spin
+   inertia, how far a stir carries, the cloth's grab lag. Measure the heaviest shaders (Night Pool's
+   water, Bedsheet Cinema's haze, Double Prints' prints) and drop the pixel ratio to 1.5 where a phone
+   can't hold 60 fps.
+2. **A "send this one" button.** Every scene already has `#<photo id>` deep links. A small share
+   button in the caption pill that copies the link (or opens the share sheet) would make the
+   morning-after use direct.
+3. **Per-scene ideas the builders and I noted:**
+   - Mirror Ball: real reflections of the room in each mirror instead of hashed flecks, and a
+     restaged room so the caught photo can be bigger than 44% of the screen on desktop.
+   - Night Pool: a GPU wave simulation at higher resolution for fine ripples, with caustics computed
+     from the actual surface.
+   - Receipt Roll: torn receipts that slowly curl into loose tubes and shade each other, and more
+     form on the printer's lid.
+   - Bedsheet Cinema: cloth self-collision for very large pulls, and a cheaper haze.
+   - Double Prints: prints that shove each other instead of only sliding over, and a gesture to
+     gather them back into the envelope.
+4. **Sound, maybe.** The whole collection is silent and that's part of its restraint. Still, a room
+   tone with a projector fan, a printer motor and water would add a lot here, off by default.
+5. **Share the boilerplate.** Each scene repeats about 60 lines of photo loading, caption, deep-link
+   and platform-contract code so its folder stands alone. If the collection grows, a tiny shared
+   module would be worth the coupling.

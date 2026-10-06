@@ -25,27 +25,19 @@ place to change if you'd rather go the other way.
 
 ## Photos
 
-- **25 photos, not about 30.** That's how many were in the zip. Scenes that want more objects repeat
-  them; Double Prints uses each one twice, which is the point of "doubles".
-- **The `.HEIC` files were actually JPEGs** (an iPhone export renamed). They're read as JPEG, so no HEIC
-  decoder is needed.
-- **All metadata is stripped.** Eight of the photos (iPhone 14 and Canon G7 X) carried GPS
-  coordinates. The published JPEGs and WebPs have no EXIF, XMP or ICC data at all. I keep only the
-  capture time and the camera model, written into `photos.json` on purpose.
-- **Color.** The iPhone photos were Display P3. They're converted to sRGB before the profile is
-  dropped, so they don't wash out.
-- **Sizes.** Full photos are 1600 px on the long side (JPEG q82, 3.2 MB for all 25). Thumbnails are
-  480 px on the short side (WebP q80, 616 KB for all 25), the collection's own thumbnail size. Scenes
-  load only thumbnails up front.
-- **Order and times.** Photos are sorted by `DateTimeOriginal`. For the Canon SX740 photos, the plain
-  `DateTime` field had been rewritten by Picasa to the next evening's export time, so it couldn't be
-  used. `IMG_7539` has no metadata, so it comes last, with no time shown.
-- **One photo turned upright by hand.** `IMG_7539` (the dark selfie) was saved sideways with no
-  orientation tag, so both faces lay on their side. Its entry has `"rotate": 90`, and the script turns it
-  clockwise into a 1600 × 900 landscape. Remove that key to undo it.
-- **Captions are mine.** I wrote short, neutral captions from what's visible ("The huddle", "Blue
-  booth"), with no names and nothing about drinking. Each photo also has a hand-placed `focus` point
-  where the faces are, which every crop respects. Edit both in any scene's `photos.json`.
+- **The photos are stock photos.** On request, the personal retreat photos were replaced by 25 free
+  photos from [Lorem Picsum](https://picsum.photos), which serves Unsplash photos under the Unsplash
+  License (free to use, attribution not required but given). Each `photos.json` entry has the
+  photographer's name and a `source_page` link. They are not party photos: the Picsum set is landscapes,
+  streets, objects and a few portraits, picked for a mix of landscape and portrait shapes.
+- **25 photos.** Scenes that want more objects repeat them; Double Prints uses each one twice, which is
+  the point of "doubles".
+- **Times are made up.** Stock photos have no capture time, so `taken` runs from 19:20 to 23:40 on
+  2026-10-03 in the order listed, so the time pills and Receipt Roll's timeline still work.
+- **Sizes.** Full photos are 1600 px on the long side (JPEG q82, no metadata). Thumbnails are 480 px on
+  the short side (WebP q80). Scenes load only thumbnails up front.
+- **Captions are mine**, short and neutral, each with a hand-placed `focus` point that every crop
+  respects. Edit both in any scene's `photos.json`.
 - **Album name.** `photos.json` → `album.title` is `"Retreat"`, a placeholder. Receipt Roll prints it
   and Double Prints puts it on the envelope.
 - **Every scene folder has its own copy of the photos**, as you specified: `experiences/<name>/` with
@@ -97,7 +89,7 @@ Ideas I considered and dropped:
 
 - One `photos.json` per scene, a superset of the collection's format: `id`, `src`, `description`,
   `photographer`, `source_page`, `width`, `height`, plus `thumb`, `taken`, `camera` and `focus`, and an
-  `album` object. Credits and sources are empty for personal photos, and the UI hides them.
+  `album` object. Credits and sources are filled in for the stock photos.
 - **Deep links**: `#<photo id>` opens that photo, and opening one updates the hash, so a friend can be
   sent straight to "Two skulls".
 - The platform contract as the references do it: hello, visibility, ready, and no frames when off

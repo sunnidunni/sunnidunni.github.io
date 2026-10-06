@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Double Prints</title>
+  <meta name="description" content="A night's photos back from the lab in doubles, spilled across an oak table in morning sun through venetian blinds.">
+  <meta name="theme-color" content="#4a3220">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23a06a38'/%3E%3Cpath d='M0 13 L32 5 L32 9 L0 17Z M0 21 L32 13 L32 17 L0 25Z' fill='%23e8b878' opacity='.55'/%3E%3Cg transform='rotate(-14 13 14)'%3E%3Crect x='4' y='8' width='17' height='12' fill='%23f1ede4'/%3E%3Crect x='5.5' y='9.5' width='14' height='9' fill='%23384050'/%3E%3C/g%3E%3Cg transform='rotate(10 19 19)'%3E%3Crect x='11' y='13' width='17' height='12' fill='%23faf6ee'/%3E%3Crect x='12.5' y='14.5' width='14' height='9' fill='%235b4660'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="scene" tabindex="0" aria-label="Fifty glossy prints, two of every photo from one night, spilled out of the lab envelope across an oak table in morning sun through venetian blinds. Drag a print to slide it; it turns behind your finger and carries the prints lying on it. Drag across bare table to sweep prints aside with your hand. Select a print to pick it up and select it again to turn it over. Enter picks up the print nearest the middle, F or Space turns it over, the left and right arrow keys step through the photos in the order they were taken, and Escape puts it back down."></canvas>
+  <div id="caption" class="caption" hidden>
+    <button id="prev" type="button" aria-label="Previous photo">‹</button>
+    <p><span id="time"></span><strong id="title"></strong><span id="copy"><span id="copy-long"></span><span id="copy-short"></span></span></p>
+    <button id="next" type="button" aria-label="Next photo">›</button>
+    <button id="close" type="button" aria-label="Put the print back down">×</button>
+  </div>
+  <p id="live" class="sr-only" aria-live="polite"></p>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

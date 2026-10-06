@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bedsheet Cinema</title>
+  <meta name="description" content="The night's photos projected one at a time onto a bedsheet pinned to a beam in a dark cabin.">
+  <meta name="theme-color" content="#050403">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23150f0b'/%3E%3Crect x='3' y='6' width='26' height='3' fill='%235a3c26'/%3E%3Cpath d='M6 8h20l-1 18H7z' fill='%23efe6d6'/%3E%3Cpath d='M10 13h12v8H10z' fill='%23d9a066'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="scene" tabindex="0" aria-label="A bedsheet pinned to a beam in a dark cabin, with the night's photos projected onto it one at a time by a slide projector. Drag the sheet to take hold of it and fold it; let go and it swings back. Tap to show the next slide. Right arrow or Space shows the next slide, left arrow the previous one, and Enter sends a draft through the sheet."></canvas>
+  <div id="caption" class="caption is-idle">
+    <button id="prev" type="button" aria-label="Previous slide">‹</button>
+    <p><span id="count"></span><span id="time"></span><strong id="title"></strong></p>
+    <button id="next" type="button" aria-label="Next slide">›</button>
+  </div>
+  <p id="live" class="sr-only" aria-live="polite"></p>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

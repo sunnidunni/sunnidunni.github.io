@@ -1,0 +1,16 @@
+# Receipt Roll
+
+A small thermal printer on a diner counter prints one night as a receipt, each photo dithered to one-bit dots, under a hanging lamp and the pink glow of an OPEN sign. It prints the first photo by itself and waits. Drag the paper toward you or scroll down to print more, flick it sideways to tear it off, and select a printed photo to see the original; Down arrow or Space pulls, T tears, Enter opens the latest photo, Left and Right arrows step through the photos, and Escape closes it.
+
+The paper slides on a little after you let go, and a quick snap back toward the printer also tears it (as does Backspace). The receipt prints the 25 photos from one retreat night once each, oldest first, each dithered at the printer's 384 dots a line and printed whole (portrait photos print taller), between its time and caption and an item line naming the camera. After the last photo come the totals and a barcode, and the printer cuts the paper itself; the next pull starts a reprint. A torn receipt keeps what was printed on it and comes to rest beside the paper (the five most recent stay on the counter); the printer feeds a short CONT'D header and prints again from the photo the tear went through. Only the thumbnails load up front, each dithered as it arrives; the receipt is drawn into its texture a page at a time as the paper reaches it, and a photo's full file loads only when the photo is opened.
+
+Serve the repository root over HTTP and open `experiences/receipt-roll/`. It is plain HTML, CSS, and three JavaScript modules drawing with WebGL 2: `main.js` draws the scene and handles input, `paper.js` models the paper and the printer's feed, and `receipt.js` lays out and prints the receipt. There is no build step or dependency.
+
+## Use your own photos
+
+1. Put your photos in one folder (JPEG, PNG or WebP; HEIC needs `pip install pillow-heif`).
+2. From the repository root, run `python3 scripts/prepare-photos.py /path/to/your/photos experiences/receipt-roll`. It replaces `photos/`, `thumbs/` and `photos.json` in this folder: photos are turned upright, converted to sRGB, stripped of location and camera metadata, saved at 1600 px with 480 px WebP thumbnails, and listed oldest first. It needs Pillow (`pip install pillow`).
+3. Caption them in `photos.json`, one photo per line: `description` is the caption, `taken` the time shown (or `null`), and `focus` the point to keep in frame when a photo is cropped (0–1 from the left and top; this scene prints photos whole, so it only matters elsewhere). `album.title` is printed large at the head of the receipt, and `album.date` under it with the first photo's time; its day of the month is the order number. `camera` names each item (an empty one prints as an unknown camera).
+4. Reload the page. Any number of photos works, each printed once; the receipt simply gets longer. `CURL` at the top of `paper.js` sets how far the free end rolls up, and `LIFT` and `GAMMA` at the top of `receipt.js` set how the photos are toned before dithering (raise `LIFT` for darker photos).
+
+Without Python: add a JPEG to `photos/`, a WebP or JPEG about 480 px on its short side to `thumbs/`, and a line to `photos.json` with its `id`, `src`, `thumb`, `width`, `height`, `description`, `taken` and `focus`.

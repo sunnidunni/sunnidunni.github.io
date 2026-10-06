@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Night Pool</title>
+  <meta name="description" content="The night's prints afloat on a pool after the party, lit from below by its lamps and from above by a string of bulbs.">
+  <meta name="theme-color" content="#07090a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='4' width='28' height='24' rx='3' fill='%2332332f'/%3E%3Crect x='5' y='7' width='22' height='18' rx='1' fill='%231fa7a3'/%3E%3Crect x='10' y='11' width='10' height='8' fill='%23f1ece2' transform='rotate(-12 15 15)'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="scene" tabindex="0" aria-label="A pool at night with printed photographs floating on its lit water under a string of bulbs. Drag through the water to stir it and the prints drift in your wake; select a print to lift it out of the water. Arrow keys push a current through the pool and Enter lifts the print nearest the middle; while a print is lifted, the left and right arrow keys step through the photographs in the order they were taken and Escape drops it back."></canvas>
+  <div id="caption" class="caption" hidden>
+    <button id="prev" type="button" aria-label="Previous photo">‹</button>
+    <p><span id="time"></span><strong id="title"></strong></p>
+    <button id="next" type="button" aria-label="Next photo">›</button>
+    <button id="close" type="button" aria-label="Drop the print back into the pool">×</button>
+  </div>
+  <p id="live" class="sr-only" aria-live="polite"></p>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

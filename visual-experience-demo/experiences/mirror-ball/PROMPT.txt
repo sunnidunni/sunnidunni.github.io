@@ -1,0 +1,5 @@
+Recreate "Mirror Ball" with my own photos.
+
+Source: https://github.com/HaichaoLihc/visual-experience-demo/tree/main/experiences/mirror-ball
+
+Ask me for the photos if I haven't shared them, then run it locally and tell me how to open it.

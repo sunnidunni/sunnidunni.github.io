@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mirror Ball</title>
+  <meta name="description" content="A mirror ball tiled with the night's photos turns in an empty room, throwing them across the walls as squares of light.">
+  <meta name="theme-color" content="#050506">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 0v8' stroke='%23716d67' stroke-width='1.6'/%3E%3Ccircle cx='16' cy='19' r='11.5' fill='%23262421'/%3E%3Cpath d='M5 15.5h22M5 22.5h22M11.5 8.5v21M20.5 8.5v21' stroke='%23110f0e' stroke-width='1.4'/%3E%3Crect x='12.5' y='16.5' width='7' height='5' fill='%23f3e2c2'/%3E%3Crect x='6.5' y='23.5' width='4' height='3' fill='%238f8170'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="scene" tabindex="0" aria-label="A mirror ball tiled with the night's photos turns in a dark room, throwing them across the walls, floor and ceiling as squares of light. Drag sideways to spin it. Tap a square of light or a mirror to catch its photo on the back wall; while it is caught, swipe sideways to step through the photos, and tap anywhere else to let it go. Left and right arrow keys spin the ball, or step through the photos while one is caught; Enter or Space catches the light nearest the middle; Escape lets it go."></canvas>
+  <div id="caption" class="caption" hidden>
+    <button id="prev" type="button" aria-label="Previous photo">‹</button>
+    <p><time id="time"></time><strong id="title"></strong></p>
+    <button id="next" type="button" aria-label="Next photo">›</button>
+    <button id="close" type="button" aria-label="Let the photo go">×</button>
+  </div>
+  <p id="live" class="sr-only" aria-live="polite"></p>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
